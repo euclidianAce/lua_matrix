@@ -1,13 +1,14 @@
-#lua_matrix 
+# lua_matrix 
 A matrix library for Lua, written in C. (This is basically a port of a library I've already written in Lua, but am using to learn the C api.)
 
-#Todo:
+# Todo:
 #### Short Term
 - [x] Basic Constructor
 - [x] Basic Getters and Setters
+- [x] Basic error checking for index out of range
 - [ ] Add aritmetic metamethods
 - [ ] Add metamethods to allow access of matrices using index notation (i.e. a[2][3] instead of a:get(2,3))
-- [ ] Different constructors for
+- Different constructors for
 	- [ ] Arbitrary Matrix initialized with a table of tables
 	- [ ] Identity Matrix
 	- [ ] Random Matrix
@@ -19,10 +20,10 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 - [ ] Row reduction and Gaussian Elimination methods
 - [ ] Implement the Aguilera-Perez Algorithm for Rotation Matrix Constructor
 
-#Build (Linux)
+# Build (Linux)
 Download the lua_matrix.c file and with gcc run
 ```
-gcc -shared -o lua_matrix.so -fPIC lua_matrix.c
+$ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c
 ```
 This will produce a shared library (.so file) that when put in the same directory as a Lua file can just be required like so:
 ```
