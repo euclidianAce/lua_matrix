@@ -26,21 +26,23 @@ static Matrix *is_matrix(lua_State *L, int index) {
 
 
 //{{{ Constructors
-static int make_matrix(lua_State *L) {
+
+// allocates memory and returns pointer to matrix
+static Matrix *make_matrix(lua_State *L, int rows, int cols) {
+	size_t nbytes = sizeof(Matrix) + (rows * cols - 1) * sizeof(double);
+	Matrix *m = (Matrix *)lua_newuserdata(L, nbytes);
+	m->rows = rows;
+	m->cols = cols;
+	luaL_setmetatable(L, METATABLE);
+	return m;
+}
+
+// practically the same as make_matrix, but returns the matrix to lua
+static int make_matrix_lua(lua_State *L) {
 	// takes 2 integer arguments, rows and columns
 	int rows = luaL_checkinteger(L, 1);
 	int cols = luaL_checkinteger(L, 2);
-	
-	// a matrix is basically a big array of doubles with rows*cols elements
-	size_t nbytes = sizeof(Matrix) + (rows * cols) * sizeof(double);
-	Matrix *m = (Matrix *)lua_newuserdata(L, nbytes);
-
-	// set the metatable to make it a matrix object
-	luaL_setmetatable(L, METATABLE);
-
-	m->rows = rows;
-	m->cols = cols;
-
+	make_matrix(L, rows, cols);
 	return 1;
 }
 // add identity and random constructors
@@ -81,10 +83,10 @@ static int get_matrix_element(lua_State *L) {
 
 
 // accessing the size in lua
-static int get_size(lua_State *L) {
+static int get_matrix_size(lua_State *L) {
 	Matrix *m = is_matrix(L, 1);
-	lua_pushnumber(L, m->rows);
-	lua_pushnumber(L, m->cols);
+	lua_pushinteger(L, m->rows);
+	lua_pushinteger(L, m->cols);
 	return 2;
 }
 
@@ -105,28 +107,125 @@ static int matrix_add(lua_State *L) {
 	luaL_argcheck(L, same_size(m1, m2), 2, "Matrices not the same size");
 	
 	// make a new matrix to return
-	size_t nbytes = sizeof(Matrix) + (m1->rows * m1->cols) * sizeof(double);
-	Matrix *sum = (Matrix *)lua_newuserdata(L, nbytes);
-	
-	// set the size of it
-	sum->rows = m1->rows;
-	sum->cols = m1->cols;
+	Matrix *sum = make_matrix(L, m1->rows, m1->cols);
 
 	// actually do the adding
-	for(int i = 0; i < m1->rows * m1->cols - 1; i++)
+	for(int i = 0; i < m1->rows * m1->cols; i++)
 		sum->val[i] = m1->val[i] + m2->val[i];
-
-	// set the metatable for the sum
-	luaL_setmetatable(L, METATABLE);
 
 	return 1; //return the matrix
 }
+
+static int matrix_sub(lua_State *L) {
+	// check if the two arguments are matrices and assign them
+	Matrix *m1 = is_matrix(L, 1);
+	Matrix *m2 = is_matrix(L, 2);
+	
+	// check if m1 and m2 are the same size
+	luaL_argcheck(L, same_size(m1, m2), 2, "Matrices not the same size");
+
+	// make a new matrix to return
+	Matrix *dif = make_matrix(L, m1->rows, m1->cols);
+
+	// actually do the adding
+	for(int i = 0; i < m1->rows * m1->cols; i++)
+		dif->val[i] = m1->val[i] - m2->val[i];
+
+	return 1; //return the matrix
+}
+
+static int matrix_unm(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	Matrix *negm = make_matrix(L, m->rows, m->cols);
+	for(int i = 0; i < m->rows * m->cols; i++)
+		negm->val[i] = -m->val[i];
+
+	return 1;
+
+}
+
+static int matrix_div(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	double divisor = luaL_checknumber(L, 2);
+
+	Matrix *newm = make_matrix(L, m->rows, m->cols);
+	for(int i = 0; i < m->rows * m->cols; i++) {
+		newm->val[i] = m->val[i] / divisor;
+	}
+
+	return 1;
+}
+
+static int matrix_idiv(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	double divisor = luaL_checknumber(L, 2);
+
+	Matrix *newm = make_matrix(L, m->rows, m->cols);
+	for(int i = 0; i < m->rows * m->cols; i++) {
+		newm->val[i] = floor(m->val[i] / divisor);
+	}
+
+	return 1;
+}
+
+static int matrix_mod(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	double divisor = luaL_checknumber(L, 2);
+
+	Matrix *newm = make_matrix(L, m->rows, m->cols);
+	for(int i = 0; i < m->rows * m->cols; i++) {
+		newm->val[i] = fmod(m->val[i], divisor);
+	}
+
+	return 1;
+}
+
+static int matrix_mul(lua_State *L) {
+	double num;
+	Matrix *m1;
+	Matrix *m2;
+
+	if(lua_isnumber(L, -1) || lua_isnumber(L, -2)){
+		// matrix number product
+		if(lua_isnumber(L, -2) /* 1st arg is number */) {
+			num = luaL_checknumber(L, 1);
+			m1 = is_matrix(L, 2);
+		} else if(lua_isnumber(L, -1) /* 2nd arg is number */) {
+			num = luaL_checknumber(L, 2);
+			m1 = is_matrix(L, 1);
+		}
+		m2 = make_matrix(L, m1->rows, m1->cols);
+		for(int i = 0; i < m1->rows * m1->cols; i++)
+			m2->val[i] = num * m1->val[i];
+	} else {
+		// matrix matrix product
+		m1 = is_matrix(L, 1);
+		m2 = is_matrix(L, 2);
+
+		// check if the matrices are the correct size
+		luaL_argcheck(L, m1->cols == m2->rows, 2, "Wrong size");
+
+		Matrix *m3 = make_matrix(L, m1->rows, m2->cols);
+
+		for(int i = 0; i < m3->rows * m3->cols; i++) {
+			m3->val[i] = 0;
+			for(int j = 0; j < m1->cols; j++) {
+				int m1_index = (i/m3->cols)*m1->cols + j;
+				int m2_index = i%m3->cols + j*m3->cols;
+				m3->val[i] += m1->val[ m1_index ] * m2->val[ m2_index ];
+			}
+		}
+	}
+
+	return 1;
+}
+
 
 //}}}
 
 // initialize the library
 static const struct luaL_reg matrixlib_f [] = {
-	{"new", make_matrix},
+	{"new", make_matrix_lua},
 	{NULL, NULL}
 };
 
@@ -134,12 +233,19 @@ static const struct luaL_reg matrixlib_f [] = {
 static const struct luaL_reg matrixlib_m_index [] = {
 	{"set", set_matrix_element},
 	{"get", get_matrix_element},
+	{"size", get_matrix_size},
 	{NULL, NULL}
 };
 
 // metamethods for matrix object
 static const struct luaL_reg matrixlib_metam [] = {
 	{"__add", matrix_add},
+	{"__sub", matrix_sub},
+	{"__unm", matrix_unm},
+	{"__div", matrix_div},
+	{"__idiv", matrix_idiv},
+	{"__mod", matrix_mod},
+	{"__mul", matrix_mul},
 	{NULL, NULL}
 };
 

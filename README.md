@@ -9,14 +9,14 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 - [ ] Either a \_\_tostring method or a simple print method to help debugging
 - [ ] Add aritmetic metamethods
 	- [x] \_\_add
-	- [ ] \_\_sub
-	- [ ] \_\_unm
-	- [ ] \_\_mul (the important one)
-		- [ ] Matrix Matrix product
-		- [ ] Matrix Number product
-	- [ ] \_\_div
-	- [ ] \_\_idiv
-	- [ ] \_\_mod (? probably mod each element)
+	- [x] \_\_sub
+	- [x] \_\_unm
+	- [x] \_\_mul (the important one)
+		- [x] Matrix Number product
+		- [x] Matrix Matrix product
+	- [x] \_\_div
+	- [x] \_\_idiv
+	- [x] \_\_mod (? probably mod each element)
 	- [ ] \_\_pow (for integers)
 - [ ] Add metamethods to allow access of matrices using index notation (i.e. a[2][3] instead of a:get(2,3))
 - Different constructors for
@@ -27,7 +27,7 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 - [ ] Iterators
 	- [ ] rows - each call returns a row as a table
 	- [ ] columns - each call returns a column as a table
-	- [ ] entries - each call g
+	- [ ] entries - each call returns a single element
 - [ ] Map function to apply function to each element of a matrix
 
 
