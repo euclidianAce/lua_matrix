@@ -20,13 +20,13 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 	- [ ] \_\_pow (for integers)
 - [ ] Add metamethods to allow access of matrices using index notation (i.e. a[2][3] instead of a:get(2,3))
 - Different constructors for
-	- [ ] Arbitrary Matrix initialized with a table of tables
-	- [ ] Arbitrary Matrix initialized with a table of numbers and an int of rows
-	- [ ] Identity Matrix
+	- [x] Arbitrary Matrix initialized with a table of tables
+	- [x] Arbitrary Matrix initialized with a table of numbers and an int of rows
+	- [x] Identity Matrix of variable size
 	- [ ] Random Matrix
 - [ ] Iterators
-	- [ ] rows - each call returns a row as a table
-	- [ ] columns - each call returns a column as a table
+	- [ ] rows - each call returns a row as a table (or maybe as a matrix itself?)
+	- [ ] columns - each call returns a column
 	- [ ] entries - each call returns a single element
 - [ ] Map function to apply function to each element of a matrix
 
@@ -39,6 +39,8 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 	- [ ] With cross and dot products?
 
 # Build (Linux)
+
+#### As a dynamic library
 Download the lua\_matrix.c file and with gcc run
 ```
 $ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c
@@ -47,3 +49,8 @@ This will produce a shared library (.so file) that when put in the same director
 ```
 local matrix = require("lua_matrix")
 ```
+
+#### Compiling directly into lua
+- Add this
+
+

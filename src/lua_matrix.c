@@ -1,16 +1,15 @@
 // a matrix library for lua
 
-#include<lua.h>
-#include<lualib.h>
-#include<lauxlib.h>
+#include "lua-5.3.5/src/lua.h"
+#include "lua-5.3.5/src/lualib.h"
+#include "lua-5.3.5/src/lauxlib.h"
 
 #include<stdlib.h>
-#include<stdbool.h>
 
 #include<math.h>
 
 #define METATABLE "Matrix"
-
+#define SIZE_ERR "Matrices not same size"
 
 typedef struct Matrix {
 	int rows, cols;
@@ -27,7 +26,7 @@ static Matrix *is_matrix(lua_State *L, int index) {
 
 //{{{ Constructors
 
-// allocates memory and returns pointer to matrix
+// allocates memory, puts matrix userdata on the stack, and returns pointer to matrix
 static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 	size_t nbytes = sizeof(Matrix) + (rows * cols - 1) * sizeof(double);
 	Matrix *m = (Matrix *)lua_newuserdata(L, nbytes);
@@ -39,13 +38,67 @@ static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 
 // practically the same as make_matrix, but returns the matrix to lua
 static int make_matrix_lua(lua_State *L) {
-	// takes 2 integer arguments, rows and columns
-	int rows = luaL_checkinteger(L, 1);
-	int cols = luaL_checkinteger(L, 2);
-	make_matrix(L, rows, cols);
+	if (lua_isinteger(L, -1)) {
+		if (lua_isinteger(L, -2)) { /* 2 integers */
+			// make a matrix with no initialized values
+			int rows = luaL_checkinteger(L, 1);
+			int cols = luaL_checkinteger(L, 2);
+			make_matrix(L, rows, cols);
+
+		} else if (lua_istable(L, -2)) { /* table and int */
+			// make a matrix with values initialized based on the table
+			int rows = luaL_checkinteger(L, 2);
+			int len = luaL_len(L, -2);
+			if( len%rows != 0 )
+				return luaL_error(L, "Table can\'t be divided into %d rows", rows);
+			Matrix *m = make_matrix(L, rows, len / rows);
+
+			for(int i = 0; i < len; i++) {
+				lua_geti(L, -3, i+1);
+				if(!lua_isnumber(L, -1))
+					return luaL_error(L, "Bad table value, number expected"); //error here, bad table value, number expected
+				m->val[i] = lua_tonumber(L, -1);
+				lua_pop(L, 1);
+			}
+		}
+	} else if (lua_istable(L, -1)) { /* table of tables */
+		// get the rows and cols to initialize the matrix
+		int rows, cols;
+		rows = luaL_len(L, -1);
+		lua_geti(L, -1, 1);
+		if(!lua_istable(L, -1))
+			return luaL_error(L, "Bad table value, table expected"); //error here, bad table value, table expected
+		cols = luaL_len(L, -1);
+		lua_pop(L, 1);
+		Matrix *m = make_matrix(L, rows, cols);
+		for(int i = 0; i < rows; i++) {
+			lua_geti(L, -2, i+1);
+			if(luaL_len(L, -1) != cols)
+				return luaL_error(L, "Bad table length, %d expected", cols); //error here, bad table length, cols expected
+
+			for(int j = 0; j < cols; j++) {
+				lua_geti(L, -1, j+1);
+				if(!lua_isnumber(L, -1))
+					return luaL_error(L, "Bad table value, number expected"); //error here, bad table value, number expected
+
+				m->val[i*cols + j] = lua_tonumber(L, -1);
+				lua_pop(L, 1);
+			}
+			lua_pop(L, 1);
+		}
+	} else {
+		return luaL_argerror(L, 1, "Table or Integer expected"); // bad argument error, expected table or int
+	}
 	return 1;
 }
-// add identity and random constructors
+
+static int make_identity_matrix(lua_State *L) {
+	int rc = luaL_checkinteger(L, 1);
+	Matrix *m = make_matrix(L, rc, rc);
+	for(int i = 0; i < rc*rc; i+=rc+1)
+		m->val[i] = 1;
+	return 1;
+}
 
 //}}}
 
@@ -94,7 +147,7 @@ static int get_matrix_size(lua_State *L) {
 
 //{{{ Metamethods
 
-static bool same_size(Matrix *m1, Matrix *m2) {
+static int same_size(Matrix *m1, Matrix *m2) {
 	return m1->rows == m2->rows && m1->cols == m2->cols; 
 }
 
@@ -104,7 +157,7 @@ static int matrix_add(lua_State *L) {
 	Matrix *m2 = is_matrix(L, 2);
 	
 	// check if m1 and m2 are the same size
-	luaL_argcheck(L, same_size(m1, m2), 2, "Matrices not the same size");
+	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
 	
 	// make a new matrix to return
 	Matrix *sum = make_matrix(L, m1->rows, m1->cols);
@@ -122,7 +175,7 @@ static int matrix_sub(lua_State *L) {
 	Matrix *m2 = is_matrix(L, 2);
 	
 	// check if m1 and m2 are the same size
-	luaL_argcheck(L, same_size(m1, m2), 2, "Matrices not the same size");
+	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
 
 	// make a new matrix to return
 	Matrix *dif = make_matrix(L, m1->rows, m1->cols);
@@ -224,13 +277,14 @@ static int matrix_mul(lua_State *L) {
 //}}}
 
 // initialize the library
-static const struct luaL_reg matrixlib_f [] = {
+static const struct luaL_Reg matrixlib_f [] = {
 	{"new", make_matrix_lua},
+	{"identity", make_identity_matrix},
 	{NULL, NULL}
 };
 
 // default methods for matrix object
-static const struct luaL_reg matrixlib_m_index [] = {
+static const struct luaL_Reg matrixlib_m_index [] = {
 	{"set", set_matrix_element},
 	{"get", get_matrix_element},
 	{"size", get_matrix_size},
@@ -238,7 +292,7 @@ static const struct luaL_reg matrixlib_m_index [] = {
 };
 
 // metamethods for matrix object
-static const struct luaL_reg matrixlib_metam [] = {
+static const struct luaL_Reg matrixlib_metam [] = {
 	{"__add", matrix_add},
 	{"__sub", matrix_sub},
 	{"__unm", matrix_unm},
