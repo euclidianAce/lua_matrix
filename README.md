@@ -19,17 +19,18 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 	- [x] \_\_mod (? probably mod each element)
 	- [ ] \_\_pow (for integers)
 - [ ] Add metamethods to allow access of matrices using index notation (i.e. a[2][3] instead of a:get(2,3))
+	- This might be either impossible to do with only C or painstakingly hard
 - Different constructors for
 	- [x] Arbitrary Matrix initialized with a table of tables
 	- [x] Arbitrary Matrix initialized with a table of numbers and an int of rows
 	- [x] Identity Matrix of variable size
 	- [ ] Random Matrix
-- [ ] Iterators
-	- [ ] rows - each call returns a row as a table (or maybe as a matrix itself?)
-	- [ ] columns - each call returns a column
-	- [ ] entries - each call returns a single element
+- [x] Iterators
+	- [x] rows - each call returns a row as a table
+	- [x] columns - each call returns a column
+	- [x] entries - each call returns a single element
 - [ ] Map function to apply function to each element of a matrix
-
+- [ ] Better Error messages
 
 #### Long Term
 - [ ] Determinant method
@@ -41,7 +42,7 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 # Build (Linux)
 
 #### As a dynamic library
-Download the lua\_matrix.c file and with gcc run
+Download the lua\_matrix.c file and move it to the lua-5.3.5/src directory (or a directory with the appropriate header files). Then with gcc run
 ```
 $ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c
 ```
@@ -51,6 +52,5 @@ local matrix = require("lua_matrix")
 ```
 
 #### Compiling directly into lua
-- Add this
-
+There are plenty of guides elsewhere on the internet to compile a library into lua and I can't really be bothered to do this section right now.
 

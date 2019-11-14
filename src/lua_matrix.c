@@ -50,7 +50,7 @@ static int make_matrix_lua(lua_State *L) {
 			int rows = luaL_checkinteger(L, 2);
 			int len = luaL_len(L, -2);
 			if( len%rows != 0 )
-				return luaL_error(L, "Table can\'t be divided into %d rows", rows);
+				return luaL_argerror(L, 2, "Table not evenly divisible");
 			Matrix *m = make_matrix(L, rows, len / rows);
 
 			for(int i = 0; i < len; i++) {
@@ -65,21 +65,23 @@ static int make_matrix_lua(lua_State *L) {
 		// get the rows and cols to initialize the matrix
 		int rows, cols;
 		rows = luaL_len(L, -1);
+
 		lua_geti(L, -1, 1);
 		if(!lua_istable(L, -1))
-			return luaL_error(L, "Bad table value, table expected"); //error here, bad table value, table expected
+			return luaL_argerror(L, 1, "Bad table value, table expected"); //error here, bad table value, table expected
 		cols = luaL_len(L, -1);
 		lua_pop(L, 1);
+		
 		Matrix *m = make_matrix(L, rows, cols);
 		for(int i = 0; i < rows; i++) {
 			lua_geti(L, -2, i+1);
 			if(luaL_len(L, -1) != cols)
-				return luaL_error(L, "Bad table length, %d expected", cols); //error here, bad table length, cols expected
+				return luaL_argerror(L, 1, "Tables must all be same length"); //error here, bad table length, cols expected
 
 			for(int j = 0; j < cols; j++) {
 				lua_geti(L, -1, j+1);
 				if(!lua_isnumber(L, -1))
-					return luaL_error(L, "Bad table value, number expected"); //error here, bad table value, number expected
+					return luaL_argerror(L, 1, "Bad table value, number expected"); //error here, bad table value, number expected
 
 				m->val[i*cols + j] = lua_tonumber(L, -1);
 				lua_pop(L, 1);
@@ -144,6 +146,90 @@ static int get_matrix_size(lua_State *L) {
 }
 
 // }}}
+
+//{{{ Iterators
+
+int rows(lua_State *L) {
+	Matrix * m = lua_touserdata(L, lua_upvalueindex(1));
+	int currentRow = lua_tointeger(L, lua_upvalueindex(2));
+	if( currentRow < m->rows ) {
+		lua_pushinteger(L, currentRow + 1);
+		lua_newtable(L);
+		for(int i = 0; i < m->cols; i++) {
+			lua_pushnumber(L, m->val[m->cols*currentRow + i]);
+			lua_seti(L, -2, i+1);
+		}
+		lua_pushinteger(L, ++currentRow);
+		lua_replace(L, lua_upvalueindex(2)); //update upvalue
+		return 2;
+	} else {
+		lua_pushnil(L);
+		return 1;
+	}
+	return 0;
+}
+
+static int generate_rows(lua_State *L) {
+	Matrix * m = is_matrix(L, 1);		// push matrix to the stack
+	lua_pushinteger(L, 0);			// push the index 0 to the stack
+	lua_pushcclosure(L, rows, 2);		// push the rows function onto the stack with 2 upvalues
+	return 1;
+}
+
+int cols(lua_State *L) {
+	Matrix * m = lua_touserdata(L, lua_upvalueindex(1));
+	int currentCol = lua_tointeger(L, lua_upvalueindex(2));
+	if( currentCol < m->cols ) {
+		lua_pushinteger(L, currentCol + 1);
+		lua_newtable(L);
+		for(int i = 0; i < m->rows; i++) {
+			lua_pushnumber(L, m->val[currentCol + i * m->cols]);
+			lua_seti(L, -2, i+1);
+		}
+		lua_pushinteger(L, ++currentCol);
+		lua_replace(L, lua_upvalueindex(2)); //update upvalue
+		return 2;
+	} else {
+		lua_pushnil(L);
+		return 1;
+	}
+	return 0;
+}
+static int generate_cols(lua_State *L) {
+	Matrix * m = is_matrix(L, 1);		// push the matrix to the stack
+	lua_pushinteger(L, 0);			// push the index 0 to the stack
+	lua_pushcclosure(L, cols, 2);		// push the cols function onto the stack with 2 upvalues
+	return 1;
+}
+
+int entries(lua_State *L) {
+	Matrix * m = lua_touserdata(L, lua_upvalueindex(1));
+	int currentIndex = lua_tointeger(L, lua_upvalueindex(2));
+
+	if( currentIndex < m->rows * m->cols ) {
+		lua_pushinteger(L, currentIndex / m->cols + 1);		// push the current row
+		lua_pushinteger(L, currentIndex % m->cols + 1);		// push the current column
+		lua_pushnumber(L, m->val[currentIndex]);		// push the entry
+
+		lua_pushinteger(L, ++currentIndex);			// update the upvalue
+		lua_replace(L, lua_upvalueindex(2));
+		return 3;
+	} else {
+		lua_pushnil(L);
+		return 1;
+	}
+	return 0;
+}
+
+static int generate_entries(lua_State *L) {
+	Matrix * m = is_matrix(L, 1);		// push the matrix to the stack
+	lua_pushinteger(L, 0);			// push the index 0 to the stack
+	lua_pushcclosure(L, entries, 2);	// push the entries function onto the stack with 2 upvalues
+	return 1;
+}
+
+
+//}}}
 
 //{{{ Metamethods
 
@@ -288,6 +374,9 @@ static const struct luaL_Reg matrixlib_m_index [] = {
 	{"set", set_matrix_element},
 	{"get", get_matrix_element},
 	{"size", get_matrix_size},
+	{"rows", generate_rows},
+	{"cols", generate_cols},
+	{"entries", generate_entries},
 	{NULL, NULL}
 };
 
