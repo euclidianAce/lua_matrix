@@ -24,12 +24,6 @@ local function test(func, args, res, str)
 	end
 end
 
-local function benchmark(func, args, str)
-	local startTime = os.clock()
-	ok, err = pcall(func, table.unpack(args))
-	local endTime = os.clock()
-	print(("[Bench] <%.3e s> %s"):format(endTime-startTime, str))
-end
 
 local titlebarLen = 20
 local function printTitle(str)
@@ -448,42 +442,71 @@ test(
 	"Entries iterator values should match values from __index:get()"
 )
 
-printTitle("Benchmarks (using os.clock())")
+test(
+	function()
+		local f = a.map
+		return f ~= nil
+	end, {}, true,
+	"Map should exist"
+)
 
-local mtest, mout, t
+test(
+	function()
+		local a = a:map(function() return 4 end)
+	end, {}, true,
+	"Map should not error when function doesnt need to take arguments"
+)
 
-for n = 1, 7 do
-	mtest = matrix.new({math.random(), math.random(), math.random(), math.random()}, 2)
-	mout = matrix.identity(2)
-	t = 10^n
-	benchmark(
-		function()
-			for i = 1, t do
-				mout = mout*mtest
+test(
+	function()
+		local a = a:map(function(x) return x end)
+	end, {}, true,
+	"Map should not error when given the identity function"
+)
+
+test(
+	function()
+		return a:map(function(x) return {x} end)
+	end, {}, false,
+	"Map should error when the function passed doesn't return a number"
+)
+
+test(
+	function()
+		local b = a:map(function(x)
+			return x+1
+		end)
+		for r, c, e in a:entries() do
+			if e+1 ~= b:get(r,c) then
+				error("entries dont match")
 			end
-		end, {},
-		("Multiplying a random 2x2 matrix by itself 10^%d times"):format(n)
-	)
+		end
+	end, {}, true,
+	"Map should return a matrix with correct values"
+)
 
-	mtest = matrix.new({math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),}, 3)
-	mout = matrix.identity(3)
-	benchmark(
-		function()
-			for i = 1, t do
-				mout = mout*mtest
+test(
+	function()
+		local r, c = 1, 1
+		local rows, columns = a:size()
+		local b = a:map(function(entry, row, column)
+			if r ~= row or r < 1 then
+				error("Wrong row value passed in")
 			end
-		end, {},
-		("Multiplying a random 3x3 matrix by itself 10^%d times"):format(n)
-	)
+			if c ~= column or c < 1 then
+				error("Wrong column value passed in")
+			end
+			c = c+1
+			if c > columns then
+				c = 1
+				r = r+1
+			end
+			return entry
+		end)
+	end, {}, true,
+	"Map should pass the correct arguments into the function"
+)
 
-	mtest = matrix.new({math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),math.random(),}, 4)
-	mout = matrix.identity(4)
-	benchmark(
-		function()
-			for i = 1, t do
-				mout = mout*mtest
-			end
-		end, {},
-		("Multiplying a random 4x4 matrix by itself 10^%d times"):format(n)
-	)
-end
+
+
+

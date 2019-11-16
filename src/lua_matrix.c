@@ -1,15 +1,29 @@
-// a matrix library for lua
+// a matrix library for Lua 5.3.5
 
 #include "lua-5.3.5/src/lua.h"
 #include "lua-5.3.5/src/lualib.h"
 #include "lua-5.3.5/src/lauxlib.h"
 
 #include<stdlib.h>
-
 #include<math.h>
 
 #define METATABLE "Matrix"
 #define SIZE_ERR "Matrices not same size"
+
+
+
+//{{{ Helper Functions
+
+// I will never remember which one is which
+static int get_row_from_index(int index, int col) {
+	return index / col + 1;
+}
+
+static int get_col_from_index(int index, int col) {
+	return index % col + 1;
+}
+
+//}}}
 
 typedef struct Matrix {
 	int rows, cols;
@@ -207,11 +221,11 @@ int entries(lua_State *L) {
 	int currentIndex = lua_tointeger(L, lua_upvalueindex(2));
 
 	if( currentIndex < m->rows * m->cols ) {
-		lua_pushinteger(L, currentIndex / m->cols + 1);		// push the current row
-		lua_pushinteger(L, currentIndex % m->cols + 1);		// push the current column
-		lua_pushnumber(L, m->val[currentIndex]);		// push the entry
+		lua_pushinteger(L, get_row_from_index(currentIndex, m->cols));	// push the current row
+		lua_pushinteger(L, get_col_from_index(currentIndex, m->cols));	// push the current column
+		lua_pushnumber(L, m->val[currentIndex]);			// push the entry
 
-		lua_pushinteger(L, ++currentIndex);			// update the upvalue
+		lua_pushinteger(L, ++currentIndex);				// update the upvalue
 		lua_replace(L, lua_upvalueindex(2));
 		return 3;
 	} else {
@@ -362,6 +376,28 @@ static int matrix_mul(lua_State *L) {
 
 //}}}
 
+
+static int matrix_map(lua_State * L) {
+	Matrix * m = is_matrix(L, 1);
+	luaL_argcheck(L, lua_isfunction(L, -1), 2, "`function' expected");
+	
+	Matrix * result = make_matrix(L, m->rows, m->cols); 
+
+	for(int i = 0; i < m->rows * m->cols; i++) {
+		lua_pushvalue(L, -2); 			// copy of function
+		lua_pushnumber(L, m->val[i]); 		// copy of entry
+		lua_pushinteger(L, get_row_from_index(i, m->cols));	// current row
+		lua_pushinteger(L, get_col_from_index(i, m->cols));	// current column
+		lua_call(L, 3, 1); 			// call the function, popping the function and argument off the stack
+		luaL_argcheck(L, lua_isnumber(L, -1), 2,
+		"function must return a number"); 	// check if result is a number
+		result->val[i] = lua_tonumber(L, -1); 	// put it in the matrix
+		lua_pop(L, 1); 				// pop the result off of the stack
+	}
+
+	return 1;
+}
+
 // initialize the library
 static const struct luaL_Reg matrixlib_f [] = {
 	{"new", make_matrix_lua},
@@ -377,6 +413,7 @@ static const struct luaL_Reg matrixlib_m_index [] = {
 	{"rows", generate_rows},
 	{"cols", generate_cols},
 	{"entries", generate_entries},
+	{"map", matrix_map},
 	{NULL, NULL}
 };
 
