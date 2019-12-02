@@ -52,6 +52,8 @@ static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 
 // practically the same as make_matrix, but returns the matrix to lua
 static int make_matrix_lua(lua_State *L) {
+	// These ifs basically "overload" this function without actually overloading it
+	// since it can only take the lua_State as an arg
 	if (lua_isinteger(L, -1)) {
 		if (lua_isinteger(L, -2)) { /* 2 integers */
 			// make a matrix with no initialized values
@@ -70,7 +72,7 @@ static int make_matrix_lua(lua_State *L) {
 			for(int i = 0; i < len; i++) {
 				lua_geti(L, -3, i+1);
 				if(!lua_isnumber(L, -1))
-					return luaL_error(L, "Bad table value, number expected"); //error here, bad table value, number expected
+					return luaL_argerror(L, 1, "Bad table value, number expected");
 				m->val[i] = lua_tonumber(L, -1);
 				lua_pop(L, 1);
 			}
@@ -82,7 +84,7 @@ static int make_matrix_lua(lua_State *L) {
 
 		lua_geti(L, -1, 1);
 		if(!lua_istable(L, -1))
-			return luaL_argerror(L, 1, "Bad table value, table expected"); //error here, bad table value, table expected
+			return luaL_argerror(L, 1, "Bad table value, table expected"); 
 		cols = luaL_len(L, -1);
 		lua_pop(L, 1);
 		
@@ -90,12 +92,12 @@ static int make_matrix_lua(lua_State *L) {
 		for(int i = 0; i < rows; i++) {
 			lua_geti(L, -2, i+1);
 			if(luaL_len(L, -1) != cols)
-				return luaL_argerror(L, 1, "Tables must all be same length"); //error here, bad table length, cols expected
+				return luaL_argerror(L, 1, "Tables must all be same length"); 
 
 			for(int j = 0; j < cols; j++) {
 				lua_geti(L, -1, j+1);
 				if(!lua_isnumber(L, -1))
-					return luaL_argerror(L, 1, "Bad table value, number expected"); //error here, bad table value, number expected
+					return luaL_argerror(L, 1, "Bad table value, number expected"); 
 
 				m->val[i*cols + j] = lua_tonumber(L, -1);
 				lua_pop(L, 1);
@@ -103,7 +105,7 @@ static int make_matrix_lua(lua_State *L) {
 			lua_pop(L, 1);
 		}
 	} else {
-		return luaL_argerror(L, 1, "Table or Integer expected"); // bad argument error, expected table or int
+		return luaL_argerror(L, 1, "Table or Integer expected");
 	}
 	return 1;
 }
@@ -115,6 +117,16 @@ static int make_identity_matrix(lua_State *L) {
 		m->val[i] = 1;
 	return 1;
 }
+
+static int make_random_matrix(lua_State *L) {
+	int rows = luaL_checkinteger(L, 1);
+	int cols = luaL_checkinteger(L, 2);
+	Matrix * m = make_matrix(L, rows, cols);
+	for(int i = 0; i < rows*cols; i++)
+		m->val[i] = (double)rand()/RAND_MAX;
+	return 1;
+}
+
 
 //}}}
 
@@ -164,7 +176,7 @@ static int get_matrix_size(lua_State *L) {
 //{{{ Iterators
 
 int rows(lua_State *L) {
-	Matrix * m = lua_touserdata(L, lua_upvalueindex(1));
+	Matrix *m = lua_touserdata(L, lua_upvalueindex(1));
 	int currentRow = lua_tointeger(L, lua_upvalueindex(2));
 	if( currentRow < m->rows ) {
 		lua_pushinteger(L, currentRow + 1);
@@ -184,14 +196,14 @@ int rows(lua_State *L) {
 }
 
 static int generate_rows(lua_State *L) {
-	Matrix * m = is_matrix(L, 1);		// push matrix to the stack
+	Matrix *m = is_matrix(L, 1);		// validate that the top of the stack is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, rows, 2);		// push the rows function onto the stack with 2 upvalues
 	return 1;
 }
 
 int cols(lua_State *L) {
-	Matrix * m = lua_touserdata(L, lua_upvalueindex(1));
+	Matrix *m = lua_touserdata(L, lua_upvalueindex(1));
 	int currentCol = lua_tointeger(L, lua_upvalueindex(2));
 	if( currentCol < m->cols ) {
 		lua_pushinteger(L, currentCol + 1);
@@ -210,14 +222,14 @@ int cols(lua_State *L) {
 	return 0;
 }
 static int generate_cols(lua_State *L) {
-	Matrix * m = is_matrix(L, 1);		// push the matrix to the stack
+	Matrix *m = is_matrix(L, 1);		// validate that the top of the stack is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, cols, 2);		// push the cols function onto the stack with 2 upvalues
 	return 1;
 }
 
 int entries(lua_State *L) {
-	Matrix * m = lua_touserdata(L, lua_upvalueindex(1));
+	Matrix *m = lua_touserdata(L, lua_upvalueindex(1));
 	int currentIndex = lua_tointeger(L, lua_upvalueindex(2));
 
 	if( currentIndex < m->rows * m->cols ) {
@@ -236,7 +248,7 @@ int entries(lua_State *L) {
 }
 
 static int generate_entries(lua_State *L) {
-	Matrix * m = is_matrix(L, 1);		// push the matrix to the stack
+	Matrix *m = is_matrix(L, 1);		// validate that the top of the stack is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, entries, 2);	// push the entries function onto the stack with 2 upvalues
 	return 1;
@@ -373,15 +385,30 @@ static int matrix_mul(lua_State *L) {
 	return 1;
 }
 
+/* Schur Product
+ * 	Component-wise multiplication
+ */
+static int matrix_schur(lua_State *L) {
+	Matrix *m1 = is_matrix(L, 1);
+	Matrix *m2 = is_matrix(L, 2);
+	
+	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
+
+	Matrix *m3 = make_matrix(L, m1->rows, m1->cols);
+	for(int i = 0; i < m1->rows*m1->cols; i++)
+		m3->val[i] = m1->val[i] * m2->val[i];
+
+	return 1;
+}
 
 //}}}
 
 
 static int matrix_map(lua_State * L) {
-	Matrix * m = is_matrix(L, 1);
+	Matrix *m = is_matrix(L, 1);
 	luaL_argcheck(L, lua_isfunction(L, -1), 2, "`function' expected");
 	
-	Matrix * result = make_matrix(L, m->rows, m->cols); 
+	Matrix *result = make_matrix(L, m->rows, m->cols); 
 
 	for(int i = 0; i < m->rows * m->cols; i++) {
 		lua_pushvalue(L, -2); 			// copy of function
@@ -402,6 +429,7 @@ static int matrix_map(lua_State * L) {
 static const struct luaL_Reg matrixlib_f [] = {
 	{"new", make_matrix_lua},
 	{"identity", make_identity_matrix},
+	{"random", make_random_matrix},
 	{NULL, NULL}
 };
 
@@ -414,10 +442,11 @@ static const struct luaL_Reg matrixlib_m_index [] = {
 	{"cols", generate_cols},
 	{"entries", generate_entries},
 	{"map", matrix_map},
+	{"schur", matrix_schur},
 	{NULL, NULL}
 };
 
-// metamethods for matrix object
+// arithmetic metamethods for matrix object
 static const struct luaL_Reg matrixlib_metam [] = {
 	{"__add", matrix_add},
 	{"__sub", matrix_sub},
