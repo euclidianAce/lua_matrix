@@ -10,26 +10,17 @@
 #define METATABLE "Matrix"
 #define SIZE_ERR "Matrices not same size"
 
-
-
-//{{{ Helper Functions
-
-// I will never remember which one is which
-static int get_row_from_index(int index, int col) {
-	return index / col + 1;
-}
-
-static int get_col_from_index(int index, int col) {
-	return index % col + 1;
-}
-
-//}}}
-
 typedef struct Matrix {
 	int rows, cols;
 	double val[1];
 } Matrix;
 
+
+//{{{ Helper Functions
+
+// I will never remember which one is which
+static int get_row_from_index(int index, int col) {return index / col + 1;}
+static int get_col_from_index(int index, int col) {return index % col + 1;}
 
 static Matrix *is_matrix(lua_State *L, int index) {
 	void *ud = luaL_checkudata(L, index, METATABLE);
@@ -37,6 +28,21 @@ static Matrix *is_matrix(lua_State *L, int index) {
 	return (Matrix *)ud;
 }
 
+// util function for set and get
+static double *get_element_addr(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	int row = luaL_checkinteger(L, 2);
+	int col = luaL_checkinteger(L, 3);
+
+	// validate arguments
+	luaL_argcheck(L, m != NULL, 1 ,"`matrix' expected");
+	luaL_argcheck(L, 1 <= row && row <= m->rows, 2, "row out of range");
+	luaL_argcheck(L, 1 <= col && col <= m->cols, 3, "column out of range");
+	
+	// return the address
+	return &m->val[ m->cols * (row-1) + col - 1 ];
+}
+//}}}
 
 //{{{ Constructors
 
@@ -50,8 +56,8 @@ static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 	return m;
 }
 
-// practically the same as make_matrix, but returns the matrix to lua
-static int make_matrix_lua(lua_State *L) {
+// the constructor called from Lua
+static int lua_make_matrix(lua_State *L) {
 	// These ifs basically "overload" this function without actually overloading it
 	// since it can only take the lua_State as an arg
 	if (lua_isinteger(L, -1)) {
@@ -127,51 +133,28 @@ static int make_random_matrix(lua_State *L) {
 	return 1;
 }
 
-
 //}}}
 
 //{{{ Getters and Setters
 
-
-// util function for set and get
-static double *get_element_addr(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);
-	int row = luaL_checkinteger(L, 2);
-	int col = luaL_checkinteger(L, 3);
-
-	// validate arguments
-	luaL_argcheck(L, m != NULL, 1 ,"`matrix' expected");
-	luaL_argcheck(L, 1 <= row && row <= m->rows, 2, "row out of range");
-	luaL_argcheck(L, 1 <= col && col <= m->cols, 3, "column out of range");
-	
-	// return the address
-	return &m->val[ m->cols * (row-1) + col - 1 ];
-}
-
-// set elements
-static int set_matrix_element(lua_State *L) {
+static int lua_set_matrix_element(lua_State *L) {
 	double val = luaL_checknumber(L, 4);
-	
 	*get_element_addr(L) = val;
 	return 0;
 }
 
-// get elements
-static int get_matrix_element(lua_State *L) {
+static int lua_get_matrix_element(lua_State *L) {
 	lua_pushnumber(L, *get_element_addr(L));
 	return 1;
 }
 
-
-// accessing the size in lua
-static int get_matrix_size(lua_State *L) {
+static int lua_get_matrix_size(lua_State *L) {
 	Matrix *m = is_matrix(L, 1);
 	lua_pushinteger(L, m->rows);
 	lua_pushinteger(L, m->cols);
 	return 2;
 }
-
-// }}}
+//}}}
 
 //{{{ Iterators
 
@@ -401,9 +384,6 @@ static int matrix_schur(lua_State *L) {
 	return 1;
 }
 
-//}}}
-
-
 static int matrix_map(lua_State * L) {
 	Matrix *m = is_matrix(L, 1);
 	luaL_argcheck(L, lua_isfunction(L, -1), 2, "`function' expected");
@@ -424,37 +404,39 @@ static int matrix_map(lua_State * L) {
 
 	return 1;
 }
+//}}}
 
+//{{{ luaL_Reg and luaopen
 // initialize the library
-static const struct luaL_Reg matrixlib_f [] = {
-	{"new", make_matrix_lua},
-	{"identity", make_identity_matrix},
-	{"random", make_random_matrix},
-	{NULL, NULL}
+static const struct luaL_Reg matrixlib_funcs [] = {
+	{"new", 	lua_make_matrix		},
+	{"identity", 	make_identity_matrix	},
+	{"random", 	make_random_matrix	},
+	{NULL, 		NULL			}
 };
 
 // default methods for matrix object
-static const struct luaL_Reg matrixlib_m_index [] = {
-	{"set", set_matrix_element},
-	{"get", get_matrix_element},
-	{"size", get_matrix_size},
-	{"rows", generate_rows},
-	{"cols", generate_cols},
-	{"entries", generate_entries},
-	{"map", matrix_map},
-	{"schur", matrix_schur},
-	{NULL, NULL}
+static const struct luaL_Reg matrixlib_meta_index [] = {
+	{"set",		lua_set_matrix_element	},
+	{"get",		lua_get_matrix_element	},
+	{"size",	lua_get_matrix_size	},
+	{"rows", 	generate_rows		},
+	{"cols", 	generate_cols		},
+	{"entries", 	generate_entries	},
+	{"map", 	matrix_map		},
+	{"schur", 	matrix_schur		},
+	{NULL, 		NULL			}
 };
 
 // arithmetic metamethods for matrix object
-static const struct luaL_Reg matrixlib_metam [] = {
-	{"__add", matrix_add},
-	{"__sub", matrix_sub},
-	{"__unm", matrix_unm},
-	{"__div", matrix_div},
-	{"__idiv", matrix_idiv},
-	{"__mod", matrix_mod},
-	{"__mul", matrix_mul},
+static const struct luaL_Reg matrixlib_metamethods [] = {
+	{"__add", 	matrix_add		},
+	{"__sub", 	matrix_sub		},
+	{"__unm", 	matrix_unm		},
+	{"__div", 	matrix_div		},
+	{"__idiv", 	matrix_idiv		},
+	{"__mod", 	matrix_mod		},
+	{"__mul", 	matrix_mul		},
 	{NULL, NULL}
 };
 
@@ -464,14 +446,16 @@ int luaopen_lua_matrix(lua_State *L) {
 	// make the .__index entry in the metatable
 	lua_pushstring(L, "__index");		// push the key __index onto the stack
 	lua_newtable(L); 			// push a new empty table onto the stack
-	luaL_setfuncs(L, matrixlib_m_index, 0); // fill it with the index methods
+	luaL_setfuncs(L, matrixlib_meta_index, 0); // fill it with the index methods
 	lua_settable(L, -3); 			// METATABLE["__index"] = matrix_m_index
 	// make the rest of the metatable (__add and stuff)
-	luaL_setfuncs(L, matrixlib_metam, 0);
+	luaL_setfuncs(L, matrixlib_metamethods, 0);
 
 	lua_newtable(L); 			// push an empty table onto the stack
-	luaL_setfuncs(L, matrixlib_f, 0); 	// fill it with our functions
+	luaL_setfuncs(L, matrixlib_funcs, 0); 	// fill it with our functions
 	return 1;				// return it to lua
 }
+//}}}
+
 
 
