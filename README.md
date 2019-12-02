@@ -34,6 +34,12 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 	- Even though this is almost trivially implementable, idk what to call it because ```m:schur(n)``` seems a little weird
 - [ ] Better Error messages
 
+#### Mid Term
+- [ ] Learn to use header files and if they might be needed for this project.
+- [ ] Possibly redefine how the Matrix typedef struct works.
+- [ ] Separate Vector Class?
+	- [ ] Something Something Polymorphism
+
 #### Long Term
 - [ ] Determinant method
 - [ ] Row reduction and Gaussian Elimination methods
