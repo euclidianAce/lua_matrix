@@ -1,6 +1,6 @@
-#!/home/corey/codingThings/lua-5.3.5/src/lua
+#!/bin/env lua
 
-local matrix = require "lua_matrix";
+local matrix = require "lua_matrix"
 
 local function test(func, args, res, str)
 	results = {pcall(func, table.unpack(args))}

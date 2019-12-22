@@ -1,0 +1,1 @@
+: src/*.c |> gcc -shared -o %o -fPIC %f |> bin/lua_matrix.so

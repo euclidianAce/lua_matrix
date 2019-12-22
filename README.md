@@ -17,9 +17,7 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 	- [x] \_\_div
 	- [x] \_\_idiv
 	- [x] \_\_mod (? probably mod each element)
-	- [ ] \_\_pow (for integers)
-- [ ] Add metamethods to allow access of matrices using index notation (i.e. a[2][3] instead of a:get(2,3))
-	- This might be either impossible to do with only C or painstakingly hard
+	- [ ] \_\_pow (for integers at least)
 - Different constructors for
 	- [x] Arbitrary Matrix initialized with a table of tables
 	- [x] Arbitrary Matrix initialized with a table of numbers and an int of rows
@@ -39,32 +37,51 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 - [ ] Possibly redefine how the Matrix typedef struct works.
 - [ ] Separate Vector Class?
 	- [ ] Something Something Polymorphism
+	- [ ] Cross and dot products
 
 #### Long Term
 - [ ] Determinant method
 - [ ] Row reduction and Gaussian Elimination methods
 - [ ] Implement the Aguilera-Perez Algorithm for Rotation Matrix Constructor
-- [ ] Maybe a Vector object?
-	- [ ] With cross and dot products?
 
 # Build (Linux)
 
 #### As a dynamic library
-Download the lua\_matrix.c file and move it to the lua-5.3.5/src directory (or a directory with the appropriate header files). Then with gcc run
+I do keep a binary in the bin directory as lua_matrix.so for easy access but if you'd like to build it yourself here's how.
+
+##### Tup
+I personally use the tup system to build things, so if you have tup installed you can do the following.
+1. Clone the repo or curl/wget/whatever the src files
 ```
-$ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c
+$ git clone git://github.com/3uclidian/lua_matrix.git
 ```
-This will produce a shared library (.so file) that when put in the same directory as a Lua file can just be required like so:
+2. Initialize the tup repo inside and run tup
 ```
-local matrix = require("lua_matrix")
+$ tup init
+$ tup
+```
+This should compile everything, given that on your system you have:
+- gcc
+- The lua header files on your system
+
+The lua\_matrix.so file should be placed in the bin directory
+
+##### Manually
+The Tupfile basically keeps track of the command so I don't have to remember how to compile a shared library every time but the command is here if you don't want to install tup.
+
+1. Clone the repo or curl/wget/whatever the src files
+2. run the following
+```
+$ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c utils.c
 ```
 
-Or you could clone the repo (and add a copy of the lua 5.3.5 src to the place indicated in lua_matrix.c) and do a 
-```
-make
-```
-command while in the directory and the makefile should just execute the above command
+# Use
+Once you've either downoaded or compiled the library, either placing it in the directory of your Lua project or placing it in your LUA\_CPATH you can simply `require` it like any other library
 
-#### Compiling directly into lua
-There are plenty of guides elsewhere on the internet to compile a library into lua and I can't really be bothered to do this section right now.
+```lua
+local matrix = require "lua_matrix"
+local a = matrix.new(3, 3)
+```
+
+For details of how to actually use the library, check out the doc directory
 

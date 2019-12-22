@@ -1,48 +1,16 @@
 // a matrix library for Lua 5.3.5
 
-#include "lua-5.3.5/src/lua.h"
-#include "lua-5.3.5/src/lualib.h"
-#include "lua-5.3.5/src/lauxlib.h"
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 
-#include<stdlib.h>
-#include<math.h>
+#include "typedefs.h"
+#include "utils.h"
 
-#define METATABLE "Matrix"
+#include <stdlib.h>
+#include <math.h>
+
 #define SIZE_ERR "Matrices not same size"
-
-typedef struct Matrix {
-	int rows, cols;
-	double val[1];
-} Matrix;
-
-
-//{{{ Helper Functions
-
-// I will never remember which one is which
-static int get_row_from_index(int index, int col) {return index / col + 1;}
-static int get_col_from_index(int index, int col) {return index % col + 1;}
-
-static Matrix *is_matrix(lua_State *L, int index) {
-	void *ud = luaL_checkudata(L, index, METATABLE);
-	luaL_argcheck(L, ud != NULL, 1, "`matrix' expected");
-	return (Matrix *)ud;
-}
-
-// util function for set and get
-static double *get_element_addr(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);
-	int row = luaL_checkinteger(L, 2);
-	int col = luaL_checkinteger(L, 3);
-
-	// validate arguments
-	luaL_argcheck(L, m != NULL, 1 ,"`matrix' expected");
-	luaL_argcheck(L, 1 <= row && row <= m->rows, 2, "row out of range");
-	luaL_argcheck(L, 1 <= col && col <= m->cols, 3, "column out of range");
-	
-	// return the address
-	return &m->val[ m->cols * (row-1) + col - 1 ];
-}
-//}}}
 
 //{{{ Constructors
 
