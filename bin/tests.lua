@@ -252,9 +252,35 @@ test(
 
 test(
 	function()
-		local a = a^3
+		local a = matrix.new{{2,2},{2,2}}
+		a = a^3
 	end, {}, true,
-	"Matrix Integer power (__pow) should not error"
+	"Matrix Integer power (__pow) should not error on a square matrix"
+)
+
+test(
+	function()
+		local a = matrix.new{{2,2,3},{2,2,3}}
+		a = a^3
+	end, {}, false,
+	"Matrix Integer power (__pow) should error on a non-square matrix"
+)
+
+test(
+	function()
+		local a = matrix.new{{2,2},{2,2}}
+		local b = matrix.new{{1,2},{3,4}}
+		local c = a^b
+	end, {}, false,
+	"Matrix Integer power (__pow) should error when matrix is used as exponent"
+)
+
+test(
+	function()
+		local a = matrix.new{{2,2},{2,2}}
+		local b = 2^a
+	end, {}, false,
+	"Matrix Integer power (__pow) should error when matrix is used as exponent for a number"
 )
 
 printTitle("Indexing")

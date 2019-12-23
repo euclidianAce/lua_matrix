@@ -75,7 +75,13 @@ local b = a / 2   --[[ => b = [0.5 1]
 		  --	      [1.5 2]
 		  --]]
 ```
-
+- Matrix (positive) integer exponents
+```lua
+local a = matrix.new{{2,2},{2,2}}^3
+--[[ => a = [8 8]
+--	    [8 8]
+--]]
+```
 
 # Matrix Object Metamethods
 Each of these methods are part of the \_\_index table in the metatable and are called using the colon syntax

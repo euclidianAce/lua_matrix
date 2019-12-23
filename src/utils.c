@@ -1,6 +1,6 @@
-#include "lua-5.3.5/src/lua.h"
-#include "lua-5.3.5/src/lualib.h"
-#include "lua-5.3.5/src/lauxlib.h"
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 #include "typedefs.h"
 
 // I will never remember which one is which
@@ -26,4 +26,20 @@ double *get_element_addr(lua_State *L) {
 	
 	// return the address
 	return &m->val[ m->cols * (row-1) + col - 1 ];
+}
+
+// takes two arrays and multiplies them as though they were matrices
+// doesn't check size or allocate memory, only puts values where they should go in the result
+void multiply(double *arr1, int rows1, int cols1, 
+	      double *arr2, int cols2, 
+	      double *result) 
+{
+	for(int i = 0; i < rows1 * cols2; i++) {
+		result[i] = 0;
+		for(int j = 0; j < cols2; j++){
+			int index1 = (i / cols2) * cols1 + j;
+			int index2 = (i % cols2) + j * cols2;
+			result[i] += arr1[ index1 ] * arr2[ index2 ];
+		}
+	}
 }

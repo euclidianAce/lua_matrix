@@ -322,17 +322,50 @@ static int matrix_mul(lua_State *L) {
 		luaL_argcheck(L, m1->cols == m2->rows, 2, "Wrong size");
 
 		Matrix *m3 = make_matrix(L, m1->rows, m2->cols);
-
-		for(int i = 0; i < m3->rows * m3->cols; i++) {
-			m3->val[i] = 0;
-			for(int j = 0; j < m1->cols; j++) {
-				int m1_index = (i/m3->cols)*m1->cols + j;
-				int m2_index = i%m3->cols + j*m3->cols;
-				m3->val[i] += m1->val[ m1_index ] * m2->val[ m2_index ];
-			}
-		}
+		multiply(m1->val, m1->rows, m1->cols,
+			 m2->val, m2->cols,
+			 m3->val);
 	}
 
+	return 1;
+}
+
+static int matrix_pow(lua_State *L) {
+	// check that the second arg is a number
+	if(!lua_isinteger(L, -1))
+		return luaL_argerror(L, 2, "Attempt to __pow matrix and non-integer");
+	int num = lua_tointeger(L, -1);
+	// check if number is positive
+	if(num <= 0)
+		return luaL_argerror(L, 2, "Must be positive integer");
+
+	Matrix *m = is_matrix(L, 1);
+	// check if matrix is square
+	luaL_argcheck(L, m->cols == m->rows, 1, "Matrix must be square");
+	int size = m->rows * m->cols;
+
+	// copy the matrix
+	double *newM = malloc(sizeof(double) * size);
+	double *temp = calloc(size, sizeof(double));
+	for(int i = 0; i < size; i++)
+		newM[i] = m->val[i];
+
+	for(int i = 1; i < num; i++) {
+		// perform the multiplication in temp
+		multiply(newM, m->rows, m->cols,
+			 m->val, m->cols,
+			 temp);
+		// copy temp into newM
+		for(int k = 0; k < size; k++)
+			newM[k] = temp[k];
+		// rinse and repeat
+	}
+	// turn newM into a matrix
+	Matrix *newMatrix = make_matrix(L, m->rows, m->cols);
+	for(int i = 0; i < size; i++)
+		newMatrix->val[i] = newM[i];
+
+	free(newM); free(temp);
 	return 1;
 }
 
@@ -405,6 +438,7 @@ static const struct luaL_Reg matrixlib_metamethods [] = {
 	{"__idiv", 	matrix_idiv		},
 	{"__mod", 	matrix_mod		},
 	{"__mul", 	matrix_mul		},
+	{"__pow",	matrix_pow		},
 	{NULL, NULL}
 };
 
