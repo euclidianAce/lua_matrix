@@ -17,7 +17,7 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 	- [x] \_\_div
 	- [x] \_\_idiv
 	- [x] \_\_mod (? probably mod each element)
-	- [ ] \_\_pow (for integers at least)
+	- [x] \_\_pow (for integers at least)
 - Different constructors for
 	- [x] Arbitrary Matrix initialized with a table of tables
 	- [x] Arbitrary Matrix initialized with a table of numbers and an int of rows
