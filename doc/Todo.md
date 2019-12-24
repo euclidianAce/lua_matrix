@@ -30,8 +30,8 @@
 - [ ] Better Error messages
 
 #### Mid Term
-- [ ] Learn to use header files and if they might be needed for this project.
-- [ ] Possibly redefine how the Matrix typedef struct works.
+- [x] Learn to use header files and if they might be needed for this project.
+- [x] Possibly redefine how the Matrix typedef struct works.
 - [ ] Separate Vector Class?
 	- [ ] Something Something Polymorphism
 	- [ ] Cross and dot products
