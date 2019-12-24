@@ -5,6 +5,6 @@
 
 typedef struct Matrix {
 	int rows, cols;
-	double val[1];
+	double *val;
 } Matrix;
 #endif

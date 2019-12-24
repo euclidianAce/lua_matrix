@@ -115,6 +115,15 @@ end)
 --]]
 ```
 
+- schur( n:matrix )
+returns the schur (or Hadamard) product of two matrices
+```lua
+local a = matrix.new({1,2,3,4}, 2)
+local b = matrix.new({4,3,2,1}, 2)
+local c = a:schur(b) --[[ => c = [4 6]
+		     --		 [6 4]
+		     --]]
+```
 
 # Iterators
 

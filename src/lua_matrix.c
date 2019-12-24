@@ -16,13 +16,15 @@
 
 // allocates memory, puts matrix userdata on the stack, and returns pointer to matrix
 static Matrix *make_matrix(lua_State *L, int rows, int cols) {
-	size_t nbytes = sizeof(Matrix) + (rows * cols - 1) * sizeof(double);
+	size_t nbytes = sizeof(Matrix);
 	Matrix *m = (Matrix *)lua_newuserdata(L, nbytes);
 	m->rows = rows;
 	m->cols = cols;
+	m->val = calloc(sizeof(double), rows*cols);
 	luaL_setmetatable(L, METATABLE);
 	return m;
 }
+
 
 // the constructor called from Lua
 static int lua_make_matrix(lua_State *L) {
@@ -369,6 +371,13 @@ static int matrix_pow(lua_State *L) {
 	return 1;
 }
 
+// Garbage collection; frees the memory used to store the values
+static int matrix_gc(lua_State *L) {
+	Matrix *m = luaL_checkudata(L, 1, METATABLE);
+	free(m->val);
+	return 0;
+}
+
 /* Schur Product
  * 	Component-wise multiplication
  */
@@ -439,6 +448,7 @@ static const struct luaL_Reg matrixlib_metamethods [] = {
 	{"__mod", 	matrix_mod		},
 	{"__mul", 	matrix_mul		},
 	{"__pow",	matrix_pow		},
+	{"__gc", 	matrix_gc		},
 	{NULL, NULL}
 };
 

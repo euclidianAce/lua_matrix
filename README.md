@@ -1,55 +1,13 @@
 # lua\_matrix 
 A matrix library for Lua, written in C. (This is basically a port of a library I've already written in Lua, but am using to learn the C api.)
 
-# Todo:
-#### Short Term
-- [x] Basic Constructor
-- [x] Basic Getters and Setters
-- [x] Basic error checking for index out of range
-- [ ] Either a \_\_tostring method or a simple print method to help debugging
-- [ ] Add aritmetic metamethods
-	- [x] \_\_add
-	- [x] \_\_sub
-	- [x] \_\_unm
-	- [x] \_\_mul (the important one)
-		- [x] Matrix Number product
-		- [x] Matrix Matrix product
-	- [x] \_\_div
-	- [x] \_\_idiv
-	- [x] \_\_mod (? probably mod each element)
-	- [x] \_\_pow (for integers at least)
-- Different constructors for
-	- [x] Arbitrary Matrix initialized with a table of tables
-	- [x] Arbitrary Matrix initialized with a table of numbers and an int of rows
-	- [x] Identity Matrix of variable size
-	- [x] Random Matrix
-- [x] Iterators
-	- [x] rows - each call returns a row as a table
-	- [x] columns - each call returns a column
-	- [x] entries - each call returns a single element
-- [x] Map function to apply function to each element of a matrix
-- [x] Schur product metamethod (component-wise multiplication, useful for neural networks and such)
-	- Even though this is almost trivially implementable, idk what to call it because ```m:schur(n)``` seems a little weird
-- [ ] Better Error messages
-
-#### Mid Term
-- [ ] Learn to use header files and if they might be needed for this project.
-- [ ] Possibly redefine how the Matrix typedef struct works.
-- [ ] Separate Vector Class?
-	- [ ] Something Something Polymorphism
-	- [ ] Cross and dot products
-
-#### Long Term
-- [ ] Determinant method
-- [ ] Row reduction and Gaussian Elimination methods
-- [ ] Implement the Aguilera-Perez Algorithm for Rotation Matrix Constructor
 
 # Build (Linux)
 
-#### As a dynamic library
+### As a dynamic library
 I do keep a binary in the bin directory as lua_matrix.so for easy access but if you'd like to build it yourself here's how.
 
-##### Tup
+#### Tup
 I personally use the tup system to build things, so if you have tup installed you can do the following.
 1. Clone the repo or curl/wget/whatever the src files
 ```
@@ -66,7 +24,7 @@ This should compile everything, given that on your system you have:
 
 The lua\_matrix.so file should be placed in the bin directory
 
-##### Manually
+#### Manually
 The Tupfile basically keeps track of the command so I don't have to remember how to compile a shared library every time but the command is here if you don't want to install tup.
 
 1. Clone the repo or curl/wget/whatever the src files
@@ -83,5 +41,5 @@ local matrix = require "lua_matrix"
 local a = matrix.new(3, 3)
 ```
 
-For details of how to actually use the library, check out the doc directory
+For details of how to actually use the library, check out either the wiki or doc directory
 
