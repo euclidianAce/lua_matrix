@@ -7,4 +7,5 @@ typedef struct Matrix {
 	int rows, cols;
 	double *val;
 } Matrix;
+
 #endif

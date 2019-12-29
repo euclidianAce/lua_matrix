@@ -24,6 +24,9 @@ local b = matrix.new({1,2,3,4,5,6}, 3)
 --]]
 ```
 
+- matrix.new(col:int, entries:table:number)
+	- returns a matrix with col columns initialized with the values in entries
+
 - matrix.new(entries:table:table:number)
 	- returns a matrix initialized from entries, which is a table of tables of numbers
 	- The tables that are passed in are copied and not modified in any way

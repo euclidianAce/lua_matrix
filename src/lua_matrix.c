@@ -7,6 +7,7 @@
 #include "typedefs.h"
 #include "utils.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -21,6 +22,9 @@ static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 	m->rows = rows;
 	m->cols = cols;
 	m->val = calloc(sizeof(double), rows*cols);
+
+	// NEED TO VERIFY IF MEMORY WAS ABLE TO BE ALLOCATED
+
 	luaL_setmetatable(L, METATABLE);
 	return m;
 }
@@ -30,35 +34,56 @@ static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 static int lua_make_matrix(lua_State *L) {
 	// These ifs basically "overload" this function without actually overloading it
 	// since it can only take the lua_State as an arg
-	if (lua_isinteger(L, -1)) {
-		if (lua_isinteger(L, -2)) { /* 2 integers */
-			// make a matrix with no initialized values
-			int rows = luaL_checkinteger(L, 1);
-			int cols = luaL_checkinteger(L, 2);
-			make_matrix(L, rows, cols);
+	
+	// throw out any arguments past the first 2
+	lua_settop(L, 2);
 
-		} else if (lua_istable(L, -2)) { /* table and int */
-			// make a matrix with values initialized based on the table
-			int rows = luaL_checkinteger(L, 2);
-			int len = luaL_len(L, -2);
-			if( len%rows != 0 )
-				return luaL_argerror(L, 2, "Table not evenly divisible");
-			Matrix *m = make_matrix(L, rows, len / rows);
-
-			for(int i = 0; i < len; i++) {
-				lua_geti(L, -3, i+1);
-				if(!lua_isnumber(L, -1))
-					return luaL_argerror(L, 1, "Bad table value, number expected");
-				m->val[i] = lua_tonumber(L, -1);
-				lua_pop(L, 1);
-			}
-		}
-	} else if (lua_istable(L, -1)) { /* table of tables */
-		// get the rows and cols to initialize the matrix
+	// (int, int)
+	if(lua_isinteger(L, 1) && lua_isinteger(L, 2)) {
 		int rows, cols;
-		rows = luaL_len(L, -1);
+		rows = luaL_checkinteger(L, 1);
+		cols = luaL_checkinteger(L, 2);
+		make_matrix(L, rows, cols);
+		return 1;
+	}
 
-		lua_geti(L, -1, 1);
+	// (int, table) or (table, int)
+	if( lua_istable(L, 1) && lua_isinteger(L, 2) 
+	||  lua_istable(L, 2) && lua_isinteger(L, 1) ) 
+	{
+		int arg1, arg2; // arg1: rows or columns, arg2: length of table
+
+		if(lua_isinteger(L, 1)) {
+			arg1 = lua_tointeger(L, 1);
+			arg2 = luaL_len(L, 2);
+		} else {
+			arg1 = lua_tointeger(L, 2);
+			arg2 = luaL_len(L, 1);
+			lua_rotate(L, 1, 1); // guarantee that the table is on the top of the stack
+		}
+		if(arg2 % arg1 != 0) {
+			return luaL_argerror(L, 2, "Table not evenly divisible");
+		}
+		Matrix *m = make_matrix(L, arg1, arg2 / arg1);
+		for(int i = 0; i < arg2; i++) {
+			if(lua_geti(L, 2, i+1) != LUA_TNUMBER) {
+				free(m->val);
+				return luaL_argerror(L, 2, "Bad table value, number expected");
+			}
+			m->val[i] = lua_tonumber(L, -1);
+			lua_pop(L, 1);
+		}
+
+		return 1;
+	}
+	
+	// (table)
+	if(lua_istable(L, 1)) {
+		lua_settop(L, 1);
+		int rows, cols;
+		rows = luaL_len(L, 1);
+
+		lua_geti(L, 1, 1);
 		if(!lua_istable(L, -1))
 			return luaL_argerror(L, 1, "Bad table value, table expected"); 
 		cols = luaL_len(L, -1);
@@ -67,23 +92,27 @@ static int lua_make_matrix(lua_State *L) {
 		Matrix *m = make_matrix(L, rows, cols);
 		for(int i = 0; i < rows; i++) {
 			lua_geti(L, -2, i+1);
-			if(luaL_len(L, -1) != cols)
+			if(luaL_len(L, -1) != cols) {
+				free(m->val);
 				return luaL_argerror(L, 1, "Tables must all be same length"); 
+			}
 
 			for(int j = 0; j < cols; j++) {
 				lua_geti(L, -1, j+1);
-				if(!lua_isnumber(L, -1))
+				if(!lua_isnumber(L, -1)) {
+					free(m->val);
 					return luaL_argerror(L, 1, "Bad table value, number expected"); 
-
+				}
 				m->val[i*cols + j] = lua_tonumber(L, -1);
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);
 		}
-	} else {
-		return luaL_argerror(L, 1, "Table or Integer expected");
+
+		return 1;
 	}
-	return 1;
+
+	return luaL_argerror(L, 1, "Table or int expected");
 }
 
 static int make_identity_matrix(lua_State *L) {
@@ -99,7 +128,7 @@ static int make_random_matrix(lua_State *L) {
 	int cols = luaL_checkinteger(L, 2);
 	Matrix * m = make_matrix(L, rows, cols);
 	for(int i = 0; i < rows*cols; i++)
-		m->val[i] = (double)rand()/RAND_MAX;
+		m->val[i] = (double)rand()/RAND_MAX - 0.5;
 	return 1;
 }
 
@@ -149,7 +178,7 @@ int rows(lua_State *L) {
 }
 
 static int generate_rows(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);		// validate that the top of the stack is a matrix
+	Matrix *m = is_matrix(L, 1);		// validate that the first argument is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, rows, 2);		// push the rows function onto the stack with 2 upvalues
 	return 1;
@@ -349,6 +378,11 @@ static int matrix_pow(lua_State *L) {
 	// copy the matrix
 	double *newM = malloc(sizeof(double) * size);
 	double *temp = calloc(size, sizeof(double));
+
+	//
+	// MAKE SURE THESE ALLOCATIONS DONT FAIL
+	//
+
 	for(int i = 0; i < size; i++)
 		newM[i] = m->val[i];
 

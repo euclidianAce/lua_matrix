@@ -18,6 +18,7 @@
 - Different constructors for
 	- [x] Arbitrary Matrix initialized with a table of tables
 	- [x] Arbitrary Matrix initialized with a table of numbers and an int of rows
+	- [x] Arbitrary Matrix initialized with an int of columns and table of numbers
 	- [x] Identity Matrix of variable size
 	- [x] Random Matrix
 - [x] Iterators
@@ -28,6 +29,7 @@
 - [x] Schur product metamethod (component-wise multiplication, useful for neural networks and such)
 	- Even though this is almost trivially implementable, idk what to call it because ```m:schur(n)``` seems a little weird
 - [ ] Better Error messages
+- [ ] Better monitor memory allocation and throw errors if it fails
 
 #### Mid Term
 - [x] Learn to use header files and if they might be needed for this project.

@@ -36,7 +36,7 @@ void multiply(double *arr1, int rows1, int cols1,
 {
 	for(int i = 0; i < rows1 * cols2; i++) {
 		result[i] = 0;
-		for(int j = 0; j < cols2; j++){
+		for(int j = 0; j < cols2; j++) {
 			int index1 = (i / cols2) * cols1 + j;
 			int index2 = (i % cols2) + j * cols2;
 			result[i] += arr1[ index1 ] * arr2[ index2 ];
