@@ -23,7 +23,8 @@ static Matrix *make_matrix(lua_State *L, int rows, int cols) {
 	m->cols = cols;
 	m->val = calloc(sizeof(double), rows*cols);
 
-	// NEED TO VERIFY IF MEMORY WAS ABLE TO BE ALLOCATED
+	if(m->val == NULL)
+		luaL_error(L, "Unable to allocate memory for matrix.");
 
 	luaL_setmetatable(L, METATABLE);
 	return m;
@@ -329,8 +330,7 @@ static int matrix_mod(lua_State *L) {
 
 static int matrix_mul(lua_State *L) {
 	double num;
-	Matrix *m1;
-	Matrix *m2;
+	Matrix *m1, *m2;
 
 	if(lua_isnumber(L, -1) || lua_isnumber(L, -2)){
 		// matrix number product
@@ -375,33 +375,27 @@ static int matrix_pow(lua_State *L) {
 	luaL_argcheck(L, m->cols == m->rows, 1, "Matrix must be square");
 	int size = m->rows * m->cols;
 
-	// copy the matrix
-	double *newM = malloc(sizeof(double) * size);
 	double *temp = calloc(size, sizeof(double));
+	if(temp == NULL) 
+		return luaL_error(L, "Unable to allocate memory buffer for matrix __pow.");
 
-	//
-	// MAKE SURE THESE ALLOCATIONS DONT FAIL
-	//
+	Matrix *newMatrix = make_matrix(L, m->rows, m->cols);
 
 	for(int i = 0; i < size; i++)
-		newM[i] = m->val[i];
+		newMatrix->val[i] = m->val[i];
 
 	for(int i = 1; i < num; i++) {
 		// perform the multiplication in temp
-		multiply(newM, m->rows, m->cols,
+		multiply(newMatrix->val, m->rows, m->cols,
 			 m->val, m->cols,
 			 temp);
-		// copy temp into newM
+		// copy temp into newMatrix
 		for(int k = 0; k < size; k++)
-			newM[k] = temp[k];
+			newMatrix->val[k] = temp[k];
 		// rinse and repeat
 	}
-	// turn newM into a matrix
-	Matrix *newMatrix = make_matrix(L, m->rows, m->cols);
-	for(int i = 0; i < size; i++)
-		newMatrix->val[i] = newM[i];
 
-	free(newM); free(temp);
+	free(temp);
 	return 1;
 }
 

@@ -1,52 +1,21 @@
 #!/bin/env lua
-
 local matrix = require "lua_matrix"
-
-local function test(func, args, res, str)
-	io.write(
-		("[%s] %s"):format(
-			string.char(27).."[1mTesting"..string.char(27).."[0m",
-			str
-		)
-	)
-
-	results = {pcall(func, table.unpack(args))}
-	ok, err = results[1], results[2]
-	io.write("\r")
-	print(
-		(
-			"[%s%s%s] %s %s"
-		):format(
-			string.char(27).."["..(ok==res and "32" or "31")..";1m",
-			ok==res and "Passed" or "Failed",
-			string.char(27).."[0m",
-			str,
-			(not (ok==res) or not ok) 
-			and "\n         [" .. string.char(27) .. "[31m" .. "Error Message" .. string.char(27) .. "[0m] " .. err 
-			or ""
-		)
-	)
-	if ok then
-		table.remove(results, 1)
-		return table.unpack(results)
-	end
-end
 
 local function batch(func, argBatch, res, str)
 	io.write(
-		("[%s] %s"):format(
+		("[%s] %s     "):format(
 			string.char(27).."[1m......"..string.char(27).."[0m",
 			str
 		)
 	)
 	io.flush()
-	errors = {}
+	local errors = {}
 	for i, v in ipairs(argBatch) do
-		results = {pcall(func, table.unpack(v))}
-		local ok, err = results[1], results[2]
+		local ok, err = pcall(func, table.unpack(v))
 		if ok ~= res then
 			table.insert(errors, "Error: "..(err or "No error message"))
 		end
+		collectgarbage()
 		collectgarbage()
 	end
 	
@@ -66,7 +35,7 @@ local function batch(func, argBatch, res, str)
 			)
 		)
 	end
-
+	errors = nil
 end
 
 local titlebarLen = 20
@@ -83,7 +52,6 @@ end
 math.randomseed(os.time())
 
 
-printTitle("CONSTRUCTORS")
 
 local ints = {}
 for i = 1, 20 do
@@ -104,10 +72,6 @@ for i = 1, 20 do
 	end
 end
 
-batch(matrix.new, intPairs, true, "matrix.new should not error when given two integers")
-batch(matrix.random, intPairs, true, "matrix.random should not error when given two integers")
-batch(matrix.identity, ints, true, "matrix.identity should not error when given an integer")
-
 local intTablePairs = {}
 local tableIntPairs = {}
 local function range(n)
@@ -123,9 +87,6 @@ for i = 1, 20 do
 	table.insert(tableIntPairs, {t, i})
 end
 
-batch(matrix.new, intTablePairs, true, "matrix.new should not error given (int, table)")
-batch(matrix.new, tableIntPairs, true, "matrix.new should not error given (table, int)")
-
 local tablesOfTables = {}
 for i = 1, 20 do
 	local t = {}
@@ -134,8 +95,14 @@ for i = 1, 20 do
 	end
 	table.insert(tablesOfTables, {t})
 end
-batch(matrix.new, tablesOfTables, true, "matrix.new should not error given a table of tables")
+printTitle("CONSTRUCTORS")
 
+batch(matrix.new, intPairs, true, "matrix.new should not error when given two integers")
+batch(matrix.random, intPairs, true, "matrix.random should not error when given two integers")
+batch(matrix.identity, ints, true, "matrix.identity should not error when given an integer")
+batch(matrix.new, intTablePairs, true, "matrix.new should not error given (int, table)")
+batch(matrix.new, tableIntPairs, true, "matrix.new should not error given (table, int)")
+batch(matrix.new, tablesOfTables, true, "matrix.new should not error given a table of tables")
 
 
 printTitle("ARITHMETIC")
@@ -160,14 +127,17 @@ end, intTriplets, true, "Matrix Matrix multiplication should not error")
 batch(function(i, j, k)
 	local a = matrix.random(i, j) * matrix.random(j+1, k)
 end, intTriplets, false, "Matrix Matrix multiplication should error given the wrong size of matrices")
-
 batch(function(i, j)
 	local a = matrix.random(i, j) / i
 end, intPairs, true, "Matrix number division should not error")
 
 batch(function(i)
 	local a = matrix.random(i, i) ^ i
-end, ints, true, "(square) Matrix int exponents should not error")
+end, ints, true, "Square Matrix int exponents should not error")
+
+batch(function(i)
+	local a = matrix.random(i, i+1) ^ i
+end, ints, false, "Non-square matrix int exponent should error")
 
 printTitle("METAMETHODS")
 
@@ -196,14 +166,12 @@ end, intPairs, false, "Matrix:set should error when out of bounds")
 
 batch(function(i, j)
 	local a = matrix.random(i, j)
-	localb = a:get(i+1, j+1)
+	local b = a:get(i+1, j+1)
 end, intPairs, false, "Matrix:get should error when out of bounds")
 
 
 batch(function(i, j)
 	local a = matrix.random(i, j):schur( matrix.random(i, j) )
 end, intPairs, true, "Matrix schur (hadamard) product shoud not error given correct size matrices")
-
-
 
 
