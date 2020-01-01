@@ -2,7 +2,7 @@
 A matrix library for Lua, written in C. (This is basically a port of a library I've already written in Lua, but am using to learn the C api.)
 
 
-# Build (Linux)
+# Build (GCC)
 
 ### As a dynamic library
 I do keep a binary in the bin directory as lua_matrix.so for easy access but if you'd like to build it yourself here's how.
@@ -34,7 +34,7 @@ $ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c utils.c
 ```
 
 # Use
-Once you've either downoaded or compiled the library, either placing it in the directory of your Lua project or placing it in your LUA\_CPATH you can simply `require` it like any other library
+Once you've either downloaded or compiled the library, either placing it in the directory of your Lua project or placing it in your LUA\_CPATH you can simply `require` it like any other library
 
 ```lua
 local matrix = require "lua_matrix"
