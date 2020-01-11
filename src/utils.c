@@ -3,9 +3,14 @@
 #include <lauxlib.h>
 #include "typedefs.h"
 
+
 // I will never remember which one is which
 int get_row_from_index(int index, int col) {return index / col + 1;}
 int get_col_from_index(int index, int col) {return index % col + 1;}
+
+int get_index(int cols, int row, int col) {
+	return cols * (row - 1) + col - 1;
+}
 
 Matrix *is_matrix(lua_State *L, int index) {
 	void *ud = luaL_checkudata(L, index, METATABLE);
@@ -43,3 +48,9 @@ void multiply(double *arr1, int rows1, int cols1,
 		}
 	}
 }
+
+void copy(int start, int end, double *arr1, double *arr2) {
+	for(int i = start; i <= end; i++)
+		arr2[i] = arr1[i];
+}
+

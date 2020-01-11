@@ -5,10 +5,16 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 # Build (GCC)
 
 ### As a dynamic library
-I do keep a binary in the bin directory as lua_matrix.so for easy access but if you'd like to build it yourself here's how.
+I do keep a binary in the bin directory as lua\_matrix.so for easy access but if you'd like to build it yourself here's how.
+
+#### Make
+1. clone the repo && cd into it
+2. run make, and it (hopefully) should just work
+```
+$ make
+```
 
 #### Tup
-I personally use the tup system to build things, so if you have tup installed you can do the following.
 1. Clone the repo or curl/wget/whatever the src files
 ```
 $ git clone git://github.com/3uclidian/lua_matrix.git
@@ -30,7 +36,7 @@ The Tupfile basically keeps track of the command so I don't have to remember how
 1. Clone the repo or curl/wget/whatever the src files
 2. run the following
 ```
-$ gcc -shared -o lua_matrix.so -fPIC lua_matrix.c utils.c
+$ gcc -shared -o lua_matrix.so -fPIC *.c
 ```
 
 # Use

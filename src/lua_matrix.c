@@ -6,6 +6,8 @@
 
 #include "typedefs.h"
 #include "utils.h"
+#include "constructors.h"
+#include "rotation.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,23 +17,6 @@
 
 //{{{ Constructors
 
-// allocates memory, puts matrix userdata on the stack, and returns pointer to matrix
-static Matrix *make_matrix(lua_State *L, int rows, int cols) {
-	size_t nbytes = sizeof(Matrix);
-	Matrix *m = (Matrix *)lua_newuserdata(L, nbytes);
-	m->rows = rows;
-	m->cols = cols;
-	m->val = calloc(sizeof(double), rows*cols);
-
-	if(m->val == NULL)
-		luaL_error(L, "Unable to allocate memory for matrix.");
-
-	luaL_setmetatable(L, METATABLE);
-	return m;
-}
-
-
-// the constructor called from Lua
 static int lua_make_matrix(lua_State *L) {
 	// These ifs basically "overload" this function without actually overloading it
 	// since it can only take the lua_State as an arg
@@ -49,23 +34,26 @@ static int lua_make_matrix(lua_State *L) {
 	}
 
 	// (int, table) or (table, int)
-	if( lua_istable(L, 1) && lua_isinteger(L, 2) 
-	||  lua_istable(L, 2) && lua_isinteger(L, 1) ) 
+	if( (lua_istable(L, 1) && lua_isinteger(L, 2)) 
+	||  (lua_istable(L, 2) && lua_isinteger(L, 1)) ) 
 	{
 		int arg1, arg2; // arg1: rows or columns, arg2: length of table
-
-		if(lua_isinteger(L, 1)) {
+		Matrix *m;
+		if(lua_isinteger(L, 1)) { // # of columns
 			arg1 = lua_tointeger(L, 1);
 			arg2 = luaL_len(L, 2);
-		} else {
+			m = make_matrix(L, arg1, arg2 / arg1);
+		} else { // # of rows
 			arg1 = lua_tointeger(L, 2);
 			arg2 = luaL_len(L, 1);
 			lua_rotate(L, 1, 1); // guarantee that the table is on the top of the stack
+			m = make_matrix(L, arg2 / arg1, arg1);
 		}
 		if(arg2 % arg1 != 0) {
+			free(m->val);
 			return luaL_argerror(L, 2, "Table not evenly divisible");
 		}
-		Matrix *m = make_matrix(L, arg1, arg2 / arg1);
+
 		for(int i = 0; i < arg2; i++) {
 			if(lua_geti(L, 2, i+1) != LUA_TNUMBER) {
 				free(m->val);
@@ -116,20 +104,18 @@ static int lua_make_matrix(lua_State *L) {
 	return luaL_argerror(L, 1, "Table or int expected");
 }
 
-static int make_identity_matrix(lua_State *L) {
-	int rc = luaL_checkinteger(L, 1);
-	Matrix *m = make_matrix(L, rc, rc);
-	for(int i = 0; i < rc*rc; i+=rc+1)
-		m->val[i] = 1;
+static int lua_make_identity_matrix(lua_State *L) {
+	int size = luaL_checkinteger(L, 1);
+	make_identity_matrix(L, size);
 	return 1;
 }
 
 static int make_random_matrix(lua_State *L) {
 	int rows = luaL_checkinteger(L, 1);
 	int cols = luaL_checkinteger(L, 2);
-	Matrix * m = make_matrix(L, rows, cols);
+	Matrix *m = make_matrix(L, rows, cols);
 	for(int i = 0; i < rows*cols; i++)
-		m->val[i] = (double)rand()/RAND_MAX - 0.5;
+		m->val[i] = (double) rand()/RAND_MAX - 0.5;
 	return 1;
 }
 
@@ -179,7 +165,7 @@ int rows(lua_State *L) {
 }
 
 static int generate_rows(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);		// validate that the first argument is a matrix
+	is_matrix(L, 1);		// validate that the first argument is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, rows, 2);		// push the rows function onto the stack with 2 upvalues
 	return 1;
@@ -205,7 +191,7 @@ int cols(lua_State *L) {
 	return 0;
 }
 static int generate_cols(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);		// validate that the top of the stack is a matrix
+	is_matrix(L, 1);		// validate that the top of the stack is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, cols, 2);		// push the cols function onto the stack with 2 upvalues
 	return 1;
@@ -231,7 +217,7 @@ int entries(lua_State *L) {
 }
 
 static int generate_entries(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);		// validate that the top of the stack is a matrix
+	is_matrix(L, 1);		// validate that the top of the stack is a matrix
 	lua_pushinteger(L, 0);			// push the index 0 to the stack
 	lua_pushcclosure(L, entries, 2);	// push the entries function onto the stack with 2 upvalues
 	return 1;
@@ -448,8 +434,11 @@ static int matrix_map(lua_State * L) {
 // initialize the library
 static const struct luaL_Reg matrixlib_funcs [] = {
 	{"new", 	lua_make_matrix		},
-	{"identity", 	make_identity_matrix	},
+	{"identity", 	lua_make_identity_matrix},
 	{"random", 	make_random_matrix	},
+	{"translation",	lua_translation_matrix	},
+	{"mainRotation",lua_main_rotation_matrix},
+	{"rotation",	lua_rotation_matrix	},
 	{NULL, 		NULL			}
 };
 
@@ -496,6 +485,4 @@ int luaopen_lua_matrix(lua_State *L) {
 	return 1;				// return it to lua
 }
 //}}}
-
-
 

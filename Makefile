@@ -1,10 +1,11 @@
 CC=gcc
 CFLAGS=-Wall -fPIC
 
-SRC=$(wildcard src/*.c) 	# all the .c source files
-OBJ=$(SRC:.c=.o)	# all the .o files, from the .c source files
-BIN=bin
-TARGET=$(BIN)/lua_matrix.so	# what to compile to
+BIN_DIR=bin
+SRC_DIR=src
+TARGET=$(BIN_DIR)/lua_matrix.so	# what to compile to
+SRC=$(wildcard $(SRC_DIR)/*.c) 	# all the .c source files
+OBJ=$(SRC:.c=.o)		# all the .o files, from the .c source files
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
