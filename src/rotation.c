@@ -5,16 +5,6 @@
  * --   http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.8662                             --
  * --------------------------------------------------------------------------------------------------
  */
-#include "constructors.h"
-#include "utils.h"
-
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
 
 /* Basic structure of these constructors
  * void make_..._array
@@ -24,6 +14,7 @@
  * int lua_...
  * 	the function that gets called from lua, validates arguments, the calls the previous function
  */
+#include "rotation.h"
 
 // Uses homogeneous matrices to translate and rotate
 static void make_translation_array(int size, int row, double *values, double *result) {

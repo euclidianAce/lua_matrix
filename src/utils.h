@@ -12,11 +12,13 @@
 // Quickly give an error to the lua state about memory allocation
 #define ALLOC_FAIL(L) luaL_error(L, "Unable to allocate memory.")
 
+#define SIZE_ERR "Matrices not same size"
 // Indexing functions
 int get_row_from_index(int index, int col);
 int get_col_from_index(int index, int col);
 int get_index(int rows, int row, int col);
 
+int same_size(Matrix *m1, Matrix *m2);
 // Checks if a given index on the Lua stack is a matrix (via metatables) and returns it, errors otherwise
 Matrix *is_matrix(lua_State *L, int index);
 

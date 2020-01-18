@@ -3,7 +3,7 @@ local matrix = require "lua_matrix"
 
 local function batch(func, argBatch, res, str)
 	io.write(
-		("[%s] %s     "):format(
+		("[%s] %s"):format(
 			string.char(27).."[1m......"..string.char(27).."[0m",
 			str
 		)
@@ -24,7 +24,7 @@ local function batch(func, argBatch, res, str)
 			("\r[%s] %s \n  (%d/%d) %s%s\n"):format(
 				string.char(27).."[31;1mFailed"..string.char(27).."[0m",
 				str,
-				#errors, #argBatch, " tests failed\n    ", table.concat(errors, "\n    ")
+				#errors, #argBatch, " Tests failed with the following errors\n    ", table.concat(errors, "\n    ")
 			)
 		)
 	else
@@ -103,7 +103,23 @@ batch(matrix.identity, ints, true, "matrix.identity should not error when given 
 batch(matrix.new, intTablePairs, true, "matrix.new should not error given (int, table)")
 batch(matrix.new, tableIntPairs, true, "matrix.new should not error given (table, int)")
 batch(matrix.new, tablesOfTables, true, "matrix.new should not error given a table of tables")
-
+batch(function(size)
+	local m = matrix.identity(size)
+	for i = 1, size do
+		for j = 1, size do
+			local val = m:get(i,j)
+			if i == j then
+				if val ~= 1 then
+					error(("Entry %d, %d ~= 1, instead = %f"):format(i, j, val))
+				end
+			else
+				if val ~= 0 then
+					error(("Entry %d, %d ~= 0, instead = %f"):format(i, j, val))
+				end
+			end
+		end
+	end
+end, ints, true, "matrix.identity should produce a matrix with 1s along the diagonal and 0s elsewhere")
 
 printTitle("ARITHMETIC")
 
@@ -173,5 +189,53 @@ end, intPairs, false, "Matrix:get should error when out of bounds")
 batch(function(i, j)
 	local a = matrix.random(i, j):schur( matrix.random(i, j) )
 end, intPairs, true, "Matrix schur (hadamard) product shoud not error given correct size matrices")
+
+printTitle("ROTATION")
+
+-- create a batch of vectors to use
+
+local function range(n)
+	local t = {}
+	for i = 1, n do
+		table.insert(t, i)
+	end
+	return t
+end
+
+local rowVecs = {}
+for i = 2, 20 do
+	table.insert(rowVecs, { matrix.new(range(i), 1) } )
+end
+
+local colVecs = {}
+for i = 2, 20 do
+	table.insert(colVecs, { matrix.new(1, range(i)) } )
+end
+-- vector
+batch(matrix.translation, rowVecs, true, "matrix.translation should not error given row vectors")
+batch(matrix.translation, colVecs, true, "matrix.translation should not error given column vectors")
+-- size, axis1, axis2
+local sizeAxesAngle = {}
+for i = 2, 10 do -- size
+	for j = 1, i do -- axis 1
+		for k = 1, i do -- axis 2
+			for l = 1, 10 do
+				table.insert(sizeAxesAngle, {i, j, k, math.random()})
+			end
+		end
+	end
+end
+batch(matrix.mainRotation, sizeAxesAngle, true, "matrix.mainRotation should not error given a size and axes within that size")
+
+local simplexesAngle = {}
+for i = 3, 20 do
+	local t = {}
+	for j = 1, i do
+		table.insert(t, range(i+1))
+	end
+	table.insert(simplexesAngle, {matrix.new(t), math.random()})
+end	
+
+--batch(matrix.rotation, simplexesAngle, true, "matrix.rotation should not error given correctly sized simplexes")
 
 

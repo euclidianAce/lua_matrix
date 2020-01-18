@@ -9,6 +9,9 @@ inline int get_row_from_index(int index, int col) 	{return index / col + 1;}
 inline int get_col_from_index(int index, int col) 	{return index % col + 1;}
 inline int get_index(int cols, int row, int col)	{return cols * (row - 1) + col - 1;}
 
+int same_size(Matrix *m1, Matrix *m2) {
+	return m1->rows == m2->rows && m1->cols == m2->cols; 
+}
 Matrix *is_matrix(lua_State *L, int index) {
 	void *ud = luaL_checkudata(L, index, METATABLE);
 	luaL_argcheck(L, ud != NULL, 1, "`matrix' expected");

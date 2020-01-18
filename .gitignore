@@ -1,3 +1,5 @@
 src/lua-*
 .tup
 src/*.o
+.vscode
+bin/test.lua
