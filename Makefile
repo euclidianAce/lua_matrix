@@ -7,7 +7,7 @@ TARGET=$(BIN_DIR)/lua_matrix.so	# what to compile to
 SRC=$(wildcard $(SRC_DIR)/*.c) 	# all the .c source files
 OBJ=$(SRC:.c=.o)		# all the .o files, from the .c source files
 
-%.o: %.c
+%.o: %.c # compile .c files with -fPIC so they can be dynamically linked
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJ)

@@ -1,16 +1,13 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include "utils.h"
 #include "typedefs.h"
 
 
-// I will never remember which one is which
-int get_row_from_index(int index, int col) {return index / col + 1;}
-int get_col_from_index(int index, int col) {return index % col + 1;}
-
-int get_index(int cols, int row, int col) {
-	return cols * (row - 1) + col - 1;
-}
+inline int get_row_from_index(int index, int col) 	{return index / col + 1;}
+inline int get_col_from_index(int index, int col) 	{return index % col + 1;}
+inline int get_index(int cols, int row, int col)	{return cols * (row - 1) + col - 1;}
 
 Matrix *is_matrix(lua_State *L, int index) {
 	void *ud = luaL_checkudata(L, index, METATABLE);
@@ -30,7 +27,14 @@ double *get_element_addr(lua_State *L) {
 	luaL_argcheck(L, 1 <= col && col <= m->cols, 3, "column out of range");
 	
 	// return the address
-	return &m->val[ m->cols * (row-1) + col - 1 ];
+	return &m->val[ get_index(m->cols, row, col) ];
+}
+
+double dot(double *arr1, double *arr2, size_t size) {
+	double result = 0;
+	for(int i = 0; i < size; i++)
+		result += arr1[i] * arr2[i];
+	return result;
 }
 
 // takes two arrays and multiplies them as though they were matrices
@@ -39,12 +43,15 @@ void multiply(double *arr1, int rows1, int cols1,
 	      double *arr2, int cols2, 
 	      double *result) 
 {
+	// for each entry of the result matrix: dot the row of arr1 with the column of arr2
 	for(int i = 0; i < rows1 * cols2; i++) {
 		result[i] = 0;
-		for(int j = 0; j < cols2; j++) {
-			int index1 = (i / cols2) * cols1 + j;
-			int index2 = (i % cols2) + j * cols2;
-			result[i] += arr1[ index1 ] * arr2[ index2 ];
+		// row of the first matrix (i.e. the offset to be added to)
+		int row_index = (i / cols2) * cols1;
+		// column of the second matrix (i.e. the offset to be added to)
+		int col_index = (i % cols2);
+		for(; col_index < cols1*cols2; row_index+=1, col_index+=cols2) {
+			result[i] += arr1[ row_index ] * arr2[ col_index ];
 		}
 	}
 }
