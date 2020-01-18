@@ -57,7 +57,7 @@ void multiply(double *arr1, int rows1, int cols1,
 }
 
 void copy(int start, int end, double *arr1, double *arr2) {
-	for(int i = start; i <= end; i++)
+	for(int i = start; i < end; i++)
 		arr2[i] = arr1[i];
 }
 

@@ -1,4 +1,3 @@
-
 /*
  * --------------------------------------------------------------------------------------------------
  * --   Implementation of the Aguilera-Perez Algorithm                                             --
@@ -11,31 +10,32 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 
 /* Basic structure of these constructors
- * void make_SOMETHING_array
+ * void make_..._array
  * 	takes an array and populates it with the relevant values
- * Matrix make_SOMETHING_matrix
+ * Matrix make_..._matrix
  * 	creates the actual userdata, populates it with the previous function
- * int lua_SOMETHING
+ * int lua_...
  * 	the function that gets called from lua, validates arguments, the calls the previous function
  */
 
 // Uses homogeneous matrices to translate and rotate
 static void make_translation_array(int size, int row, double *values, double *result) {
-	int i, j = 0;
+	int i = size, j = 0;
 	int max = (size+1)*(size+1)-1;
 	int delta;
 	if(row) {// row vector, elements go in the last row of matrix
-		i = size * (size+1); delta = 1;
+		i *= (size+1); delta = 1;
 	} else {// column vector, elements go in the last column of matrix
-		i = size; delta = size+1;
+		delta = size+1;
 	}
-
+	make_identity_array(size, result);
 	for(; i < max; i+=delta, j++)
 		result[i] = values[j];
 }
@@ -44,7 +44,7 @@ static void make_translation_array(int size, int row, double *values, double *re
 static Matrix *make_translation_matrix(lua_State *L, Matrix *vector) {
 	int size = vector->rows == 1 ? vector->cols : vector->rows;
 	int row = vector->rows == 1;
-	Matrix *m = make_identity_matrix(L, size+1);
+	Matrix *m = make_matrix(L, size+1, size+1);
 	make_translation_array(size, row, vector->val, m->val);
 	return m;
 }
@@ -85,11 +85,9 @@ int lua_main_rotation_matrix(lua_State *L) {
 
 	return 1;
 }
-
 // a general rotation composed of translations and main rotations,
 // given a simplex to rotate about and an angle of rotation
-static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle, double *result) {
-	
+static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle, double *M) {
 	int n = v0->cols;
 	int size = (n+1)*(n+1);
 
@@ -100,56 +98,48 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 	 * v: to accumulate how the simplex changes as rotations are applied
 	 */
 
-	double *M, *M_inv, *Mk, *v, *temp_M, *temp_v, *temp_vector;
+	double *M_inv, *Mk, *v, *temp_M, *temp_vector;
 	size_t bytes = sizeof(double);
-
-	M 	= result;
-	
-	M_inv 	= calloc(size, bytes);
-	v 	= calloc(v0->rows * (n+1), bytes);
-	Mk 	= calloc(size, bytes);
-	temp_M	= calloc(size, bytes);
-	temp_v 	= calloc(v0->rows * (n+1), bytes);
-	temp_vector = calloc(n, bytes);
-
-	if    (/* M==NULL  ||*/ M_inv==NULL || v==NULL || Mk==NULL || temp_M==NULL || temp_v==NULL || temp_vector==NULL ) {
-	       /* free(M);   */	free(M_inv);   free(v);   free(Mk);   free(temp_M);   free(temp_v);   free(temp_vector);
+	v 		= calloc(v0->rows * (n+1), bytes);
+	M_inv 		= calloc(size, bytes);
+	Mk 		= calloc(size, bytes);
+	temp_M		= calloc(size, bytes);
+	temp_vector 	= calloc(n, bytes);
+	if    (M_inv==NULL || v==NULL || Mk==NULL || temp_M==NULL || temp_vector==NULL ) {
+	       free(M_inv);   free(v);   free(Mk);   free(temp_M);   free(temp_vector);
 		ALLOC_FAIL(L);
 	}
 
 	/* 		Initialization		  	*/
-
 	int i;
 	// copy v0 into v, except the first row, which gets turned to 0s
 	for(i = 1; i < v0->rows; i++) {
-		copy(i * v0->rows, i * v0->rows + v0->cols, v0->val, v);
-		v[i * v0->rows + n] = 1;
+		copy(i * v0->rows, i * v0->rows + v0->cols + 1, v0->val, v);
+		int index = get_index(v0->rows, i, n);
+		v[index] = 1;
 	}
-	
-	// initial values for M and M_inv
+
+	// initial values for M and M_inv as the initial translation and inverse of that
 	copy(0, v0->cols, v0->val, temp_vector);
-	make_translation_array(size, 1, temp_vector, M);
+	make_translation_array(n+1, 1, temp_vector, M);
 	
 	for(i = 0; i < v0->cols; i++) temp_vector[i] = -temp_vector[i];
-	make_translation_array(size, 1, temp_vector, M_inv);
+	make_translation_array(n+1, 1, temp_vector, M_inv);
 
-	free(temp_vector);
-	
 	/*		The Algorithm Itself		*/
-
 	int r, c;
-	for(r = 2; r < n - 1; r++) {
+	for(r = 2; r <= n - 1; r++) {
 		for(c = n; c >= r; c--) {
 			double theta = atan2( v[ get_index(v0->rows, r, c) ], v[ get_index(v0->rows, r, c-1) ] );
-			
+
 			// Mk = R_c,c-1 (theta)
-			main_rotation_array(size, c,   c-1, theta, Mk);
+			main_rotation_array(n+1, c, c-1, theta, Mk);
 
 			// v = v * Mk
-			multiply(v,  v0->rows, n+1,
-				 Mk, n+1,
-				 temp_v);
-			copy(0, v0->rows * (n+1), temp_v, v);
+			// This just takes the element in row r and col c of v and sets it to zero
+			// No need for an actual multiply
+			v[ get_index(v0->rows, r, c) ] = 0;
+
 			// M = M * Mk
 			multiply(M,  n+1, n+1,
 				 Mk, n+1,
@@ -157,18 +147,19 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 			copy(0, size, temp_M, M);
 			
 			// Inverse
-			main_rotation_array(size, c-1, c,   theta, Mk);
-			multiply(Mk,  n+1, n+1,
+			// the inverse rotation has the same elements but with the sin(theta) terms negated
+			Mk[ get_index(n+1, r, c) ] = -Mk[ get_index(size, r, c) ];
+			Mk[ get_index(n+1, c, r) ] = -Mk[ get_index(size, c, r) ];
+			
+			multiply(Mk,	n+1, n+1,
 				 M_inv, n+1,
 				 temp_M);
 			copy(0, size, temp_M, M_inv);
 		}
 	}
-	
-	free(v);free(temp_v);
 
 	// M = M * R_n-1,n * M_inv
-	main_rotation_array(size, n-1, n, angle, Mk);
+	main_rotation_array(n+1, n-1, n, angle, Mk);
 	multiply(M,  n+1, n+1,
 		 Mk, n+1,
 		 temp_M);
@@ -176,7 +167,11 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 		 M_inv,  n+1,
 		 M);
 
-	free(M_inv);free(Mk);free(temp_M);
+	free(temp_vector);
+	free(v);
+	free(M_inv);
+	free(Mk);
+	free(temp_M);
 }
 
 int lua_rotation_matrix(lua_State *L) {

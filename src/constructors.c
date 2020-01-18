@@ -1,6 +1,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <stdlib.h>
+
 #include "utils.h"
 #include "typedefs.h"
 
@@ -21,8 +22,10 @@ Matrix *make_matrix(lua_State *L, int rows, int cols) {
 
 
 void make_identity_array(int size, double *result) {
-	for(int i = 0; i < size*size; i+=size+1)
+	for(int i = 0; i < size * size; i+=size+1)
 		result[i] = 1;
+	//printf("Identity matrix of size %d made: \n", size);
+	//print_array(result, size);
 }
 
 Matrix *make_identity_matrix(lua_State *L, int size) {
