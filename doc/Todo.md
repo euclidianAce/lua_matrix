@@ -29,18 +29,18 @@
 - [x] Schur product metamethod (component-wise multiplication, useful for neural networks and such)
 	- Even though this is almost trivially implementable, idk what to call it because ```m:schur(n)``` seems a little weird
 - [ ] Better Error messages
-- [ ] Better monitor memory allocation and throw errors if it fails
+- [x] Better monitor memory allocation and throw errors if it fails
 
 #### Mid Term
 - [x] Learn to use header files and if they might be needed for this project.
 - [x] Possibly redefine how the Matrix typedef struct works.
-- [ ] Separate Vector Class?
+- [ ] Separate Vector Class? (at the very least some nice vector methods and constructors)
 	- [ ] Something Something Polymorphism
 	- [ ] Cross and dot products
 
 #### Long Term
 - [ ] Determinant method
 - [ ] Row reduction and Gaussian Elimination methods
-- [ ] Implement the Aguilera-Perez Algorithm for Rotation Matrix Constructor
+- [x] Implement the Aguilera-Perez Algorithm for Rotation Matrix Constructor
 
 
