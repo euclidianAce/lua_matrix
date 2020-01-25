@@ -7,6 +7,8 @@
 #define UTILS_H
 
 #include "typedefs.h"
+
+#include <stdio.h>
 #include <lauxlib.h>
 
 // Quickly give an error to the lua state about memory allocation

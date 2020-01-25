@@ -95,7 +95,7 @@ for i = 1, 20 do
 	end
 	table.insert(tablesOfTables, {t})
 end
---[[
+
 printTitle("CONSTRUCTORS")
 
 batch(matrix.new, intPairs, true, "matrix.new should not error when given two integers")
@@ -191,7 +191,6 @@ end, intPairs, false, "Matrix:get should error when out of bounds")
 batch(function(i, j)
 	local a = matrix.random(i, j):schur( matrix.random(i, j) )
 end, intPairs, true, "Matrix schur (hadamard) product shoud not error given correct size matrices")
---]]
 printTitle("ROTATION")
 
 -- create a batch of vectors to use
@@ -228,17 +227,8 @@ for i = 2, 10 do -- size
 	end
 end
 batch(matrix.mainRotation, sizeAxesAngle, true, "matrix.mainRotation should not error given a size and axes within that size")
-
-local simplexesAngle = {}
---[[
-for i = 3, 20 do
-	local t = {}
-	for j = 1, i do
-		table.insert(t, range(i+1))
-	end
-	table.insert(simplexesAngle, {matrix.new(t), math.random() * math.pi * 2})
-end	
 --]]
+local simplexesAngle = {}
 
 for i = 1, 20 do
 	table.insert(simplexesAngle, {

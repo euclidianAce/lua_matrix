@@ -9,12 +9,14 @@ SRC=$(wildcard $(SRC_DIR)/*.c) 	# all the .c source files
 OBJ=$(SRC:.c=.o)		# all the .o files, from the .c source files
 
 TARGET=$(BIN_DIR)/lua_matrix.so
-TESTTARGET=$(TEST_DIR)/run_test
+TESTTARGET=$(TEST_DIR)/runTests
 
 LIBS=-llua -lm -ldl 
 
 %.o: %.c # compile .c files with -fPIC so they can be dynamically linked
 	$(CC) $(CFLAGS) -c $< -o $@
+
+default: $(TARGET)
 
 $(TARGET): $(filter-out $(SRC_DIR)/testing.o,$(OBJ))
 	$(CC) $(filter-out $(SRC_DIR)/testing.o,$(OBJ)) -shared -o $(TARGET)
@@ -28,4 +30,4 @@ clean:
 	rm -f $(OBJ) $(TARGET) \
 	rm -f $(TESTTARGET)
 
-all: clean $(TARGET) testing
+all: clean default testing

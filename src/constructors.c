@@ -1,25 +1,19 @@
 #include "constructors.h"
 
-// allocate memory, set metatable, put pointer on stack
 Matrix *make_matrix(lua_State *L, int rows, int cols) {
-	size_t n = sizeof(Matrix);
-	Matrix *m = (Matrix *)lua_newuserdata(L, n);
+	Matrix *m = (Matrix *)lua_newuserdata(L, sizeof(Matrix));
 	m->rows = rows;
 	m->cols = cols;
 	m->val = calloc(rows * cols, sizeof(double));
 
-	if(m->val == NULL) ALLOC_FAIL(L);
-	
 	luaL_setmetatable(L, METATABLE);
-	return m;
+	return m; 
 }
 
 
 void make_identity_array(int size, double *result) {
-	for(int i = 0; i < size * size; i+=size+1)
-		result[i] = 1;
-	//printf("Identity matrix of size %d made: \n", size);
-	//print_array(result, size);
+	for(int i = 0; i < size * size; i++)
+		result[i] = get_row_from_index(i, size) == get_col_from_index(i, size) ? 1 : 0;
 }
 
 Matrix *make_identity_matrix(lua_State *L, int size) {
@@ -33,7 +27,7 @@ int lua_make_matrix(lua_State *L) {
 	// since it can only take the lua_State as an arg
 	
 	// throw out any arguments past the first 2
-	lua_settop(L, 2);
+	//lua_settop(L, 2);
 
 	// (int, int)
 	if(lua_isinteger(L, 1) && lua_isinteger(L, 2)) {
@@ -79,7 +73,7 @@ int lua_make_matrix(lua_State *L) {
 	
 	// (table)
 	if(lua_istable(L, 1)) {
-		lua_settop(L, 1);
+		//lua_settop(L, 1);
 		int rows, cols;
 		rows = luaL_len(L, 1);
 
