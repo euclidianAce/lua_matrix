@@ -5,7 +5,7 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
-#include "lua_matrix.h"
+#include "lmatrix.h"
 
 
 void console_log(const char* str) {
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	luaL_openlibs(L);
 	console_log("Opened standard library");
 	console_log("Opening matrix library");
-	lua_pushcfunction(L, luaopen_lua_matrix);
+	lua_pushcfunction(L, luaopen_lmatrix);
 	lua_call(L, 0, 1);
 	lua_setglobal(L, "matrix");
 	console_log("Opened matrix library");

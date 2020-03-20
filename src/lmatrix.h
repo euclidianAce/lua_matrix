@@ -16,6 +16,6 @@
 #include "typedefs.h"
 #include "utils.h"
 
-int luaopen_lua_matrix(lua_State *L);
+int luaopen_lmatrix(lua_State *L);
 
 #endif

@@ -1,6 +1,6 @@
 // a matrix library for Lua 5.3.5
 
-#include "lua_matrix.h"
+#include "lmatrix.h"
 
 static const struct luaL_Reg matrixlib_funcs [] = {
 	{"new", 	lua_make_matrix		},
@@ -38,7 +38,7 @@ static const struct luaL_Reg matrixlib_metamethods [] = {
 };
 
 // this basically get called when require("lua_matrix") is called
-int luaopen_lua_matrix(lua_State *L) {
+int luaopen_lmatrix(lua_State *L) {
 	luaL_newmetatable(L, METATABLE);
 	// make the .__index entry in the metatable
 	lua_pushstring(L, "__index");		// push the key __index onto the stack
