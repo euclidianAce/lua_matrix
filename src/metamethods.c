@@ -118,7 +118,7 @@ int matrix_pow(lua_State *L) {
 	luaL_argcheck(L, m->cols == m->rows, 1, "Matrix must be square");
 	int size = m->rows * m->cols;
 
-	double *temp = calloc(size, sizeof(double));
+	double *temp = malloc(sizeof(double) * size);
 	if(temp == NULL) 
 		return luaL_error(L, "Unable to allocate memory buffer for matrix __pow.");
 
@@ -131,7 +131,7 @@ int matrix_pow(lua_State *L) {
 		multiply(newMatrix->val, m->rows, m->cols,
 			 m->val, m->cols,
 			 temp);
-		copy(0, size*size, temp, newMatrix->val);
+		copy(0, size, temp, newMatrix->val);
 	}
 
 	free(temp);
