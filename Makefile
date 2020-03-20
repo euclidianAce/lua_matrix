@@ -1,14 +1,13 @@
 CC=gcc
 CFLAGS=-Wall -fPIC
 
-BIN_DIR=bin
 SRC_DIR=src
 TEST_DIR=testing
 
 SRC=$(wildcard $(SRC_DIR)/*.c) 	# all the .c source files
 OBJ=$(SRC:.c=.o)		# all the .o files, from the .c source files
 
-TARGET=$(BIN_DIR)/lua_matrix.so
+TARGET=lmatrix.so
 TESTTARGET=$(TEST_DIR)/runTests
 
 LIBS=-llua -lm -ldl 

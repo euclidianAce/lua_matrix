@@ -1,5 +1,5 @@
 ```lua
-local matrix = require "lua_matrix"
+local matrix = require "lmatrix"
 ```
 
 # Basic Constructors

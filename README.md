@@ -1,4 +1,4 @@
-# lua\_matrix 
+# lmatrix 
 A matrix library for Lua, written in C. (This is basically a port of a library I've already written in Lua, but am using to learn the C api.)
 
 
@@ -22,14 +22,14 @@ The Makefile basically keeps track of the command so I don't have to remember ho
 1. Clone the repo or curl/wget/whatever the src files
 2. run the following
 ```
-$ gcc -shared -o lua_matrix.so -fPIC *.c
+$ gcc -shared -o lmatrix.so -fPIC *.c
 ```
 
 # Use
 Once you've either downloaded or compiled the library, either placing it in the directory of your Lua project or placing it in your LUA\_CPATH you can simply `require` it like any other library
 
 ```lua
-local matrix = require "lua_matrix"
+local matrix = require "lmatrix"
 local a = matrix.new(3, 3)
 ```
 
