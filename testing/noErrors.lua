@@ -15,10 +15,8 @@ local function batch(func, argBatch, res, str)
 		if ok ~= res then
 			table.insert(errors, "Error: "..(err or "No error message"))
 		end
-		--collectgarbage()
-		--collectgarbage()
 	end
-	
+
 	if #errors > 0 then -- test failed
 		io.write(
 			("\r[%s] %s \n  (%d/%d) %s%s\n"):format(

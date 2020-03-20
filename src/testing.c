@@ -7,28 +7,36 @@
 
 #include "lua_matrix.h"
 
+
+void console_log(const char* str) {
+	printf("[C] %s\n", str);
+}
+
 int main(int argc, char **argv) {
-	if(argc != 2) {
+	if(argc < 2) {
 		printf("No lua script given\n");
+		return 0;
+	} else if (argc > 2) {
+		printf("Too many arguments.\n");
 		return 0;
 	}
 
 	lua_State *L = luaL_newstate();
 	if(!L) {
-		printf("Unable to open lua state.\n"); 
+		console_log("Unable to open lua state."); 
 		exit(1);
 	}
-	printf("[C]: Opened lua state\n");
+	console_log("Opened lua state");
 	luaL_openlibs(L);
-	printf("[C]: Opened standard library\n");
-	printf("[C]: Opening matrix library\n");
+	console_log("Opened standard library");
+	console_log("Opening matrix library");
 	lua_pushcfunction(L, luaopen_lua_matrix);
 	lua_call(L, 0, 1);
 	lua_setglobal(L, "matrix");
-	printf("[C]: Opened matrix library\n");
+	console_log("Opened matrix library");
 
 	int status = luaL_loadfile(L, argv[1]);
-	if(status != LUA_OK) 	printf("Error loading file %s", argv[1]);
+	if(status != LUA_OK) 	printf("Error loading file %s\n", argv[1]);
 	else 			lua_call(L, 0, 0);
 
 	lua_close(L);

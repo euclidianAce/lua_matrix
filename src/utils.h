@@ -18,7 +18,7 @@
 // Indexing functions
 int get_row_from_index(int index, int col);
 int get_col_from_index(int index, int col);
-int get_index(int rows, int row, int col);
+int get_index(int cols, int row, int col);
 
 int same_size(Matrix *m1, Matrix *m2);
 // Checks if a given index on the Lua stack is a matrix (via metatables) and returns it, errors otherwise

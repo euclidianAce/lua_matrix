@@ -7,6 +7,8 @@
 #include <math.h>
 
 #include "constructors.h"
+#include "iterators.h"
+#include "methods.h"
 #include "typedefs.h"
 #include "utils.h"
 
