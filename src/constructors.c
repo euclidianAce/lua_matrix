@@ -25,9 +25,6 @@ Matrix *make_identity_matrix(lua_State *L, int size) {
 int lua_make_matrix(lua_State *L) {
 	// These ifs basically "overload" this function without actually overloading it
 	// since it can only take the lua_State as an arg
-	
-	// throw out any arguments past the first 2
-	//lua_settop(L, 2);
 
 	// (int, int)
 	if(lua_isinteger(L, 1) && lua_isinteger(L, 2)) {

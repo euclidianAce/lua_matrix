@@ -2,7 +2,7 @@
 
 #include "lmatrix.h"
 
-static const struct luaL_Reg matrixlib_funcs [] = {
+static const struct luaL_Reg matrixlib_funcs[] = {
 	{"new", 	lua_make_matrix		},
 	{"identity", 	lua_make_identity_matrix},
 	{"random", 	make_random_matrix	},
@@ -12,7 +12,13 @@ static const struct luaL_Reg matrixlib_funcs [] = {
 	{NULL, 		NULL			}
 };
 
-static const struct luaL_Reg matrixlib_meta_index [] = {
+static const struct luaL_Reg vector_funcs[] = {
+	{"newRow",	lua_make_row_vector	},
+	{"newCol",	lua_make_col_vector	},
+	{NULL, 		NULL			}
+};
+
+static const struct luaL_Reg matrixlib_meta_index[] = {
 	{"set",		lua_set_matrix_element	},
 	{"get",		lua_get_matrix_element	},
 	{"size",	lua_get_matrix_size	},
@@ -21,10 +27,18 @@ static const struct luaL_Reg matrixlib_meta_index [] = {
 	{"entries", 	generate_entries	},
 	{"map", 	matrix_map		},
 	{"schur", 	matrix_schur		},
+
+	// Vector methods
+	{"magnitude", 	vector_magnitude	},
+	{"squareMag", 	vector_magnitude_squared},
+	{"normalize", 	vector_normalize	},
+	{"dot", 	vector_dot		},
+	{"cross", 	vector_cross		},
+
 	{NULL, 		NULL			}
 };
 
-static const struct luaL_Reg matrixlib_metamethods [] = {
+static const struct luaL_Reg matrixlib_metamethods[] = {
 	{"__add", 	matrix_add		},
 	{"__sub", 	matrix_sub		},
 	{"__unm", 	matrix_unm		},
@@ -51,5 +65,9 @@ int luaopen_lmatrix(lua_State *L) {
 
 	lua_newtable(L); 			// push an empty table onto the stack
 	luaL_setfuncs(L, matrixlib_funcs, 0); 	// fill it with our functions
+	lua_pushstring(L, "vector");
+	lua_newtable(L);
+	luaL_setfuncs(L, vector_funcs, 0);
+	lua_settable(L, -3);
 	return 1;				// return it to lua
 }

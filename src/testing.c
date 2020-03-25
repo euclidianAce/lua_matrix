@@ -29,7 +29,6 @@ int main(int argc, char **argv) {
 	console_log("Opened lua state");
 	luaL_openlibs(L);
 	console_log("Opened standard library");
-	console_log("Opening matrix library");
 	lua_pushcfunction(L, luaopen_lmatrix);
 	lua_call(L, 0, 1);
 	lua_setglobal(L, "matrix");

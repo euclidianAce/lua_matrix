@@ -1,5 +1,5 @@
-#ifndef _TYPEDEF_H
-#define _TYPEDEF_H
+#ifndef TYPEDEF_H
+#define TYPEDEF_H
 // Unique metatable name for lua
 #define METATABLE "lmatrix.Matrix"
 

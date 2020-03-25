@@ -1,8 +1,9 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#include "utils.h"
+
 #include "typedefs.h"
+#include "utils.h"
 
 
 inline int get_row_from_index(int index, int col) 	{return index / col + 1;}

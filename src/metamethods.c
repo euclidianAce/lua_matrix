@@ -138,6 +138,22 @@ int matrix_pow(lua_State *L) {
 	return 1;
 }
 
+//int matrix_tostring(lua_State *L) {
+//	luaL_Buffer b;
+//	luaL_buffinit(L, &b);
+//
+//	// printf("%*s", n, ptr); variable num spaces
+//	for(int r = 0; r < m->rows; r++) {
+//		for(int c = 0; c < m->cols; c++) {
+//			char buffer[100];
+//			int sz = snprintf(buffer, /*size*/, "%*s%.1f", /*more formatting*/);
+//		}
+//	}
+//
+//	luaL_pushresult(&b);
+//	return 1;
+//}
+
 int matrix_gc(lua_State *L) {
 	Matrix *m = luaL_checkudata(L, 1, METATABLE);
 	free(m->val);

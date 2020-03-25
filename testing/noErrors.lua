@@ -1,5 +1,3 @@
-#!/bin/env lua
---local matrix = require "lua_matrix"
 
 local function batch(func, argBatch, res, str)
 	io.write(
@@ -236,3 +234,10 @@ for i = 1, 20 do
 end
 
 batch(matrix.rotation, simplexesAngle, true, "matrix.rotation should not error given correctly sized simplexes and an angle ")
+
+printTitle("VECTORS")
+
+local vector = matrix.vector
+batch(function() assert(vector ~= nil) end, {{}}, true, "matrix.vector is not nil")
+batch(vector.newCol, ints, true, "vector.newCol doesn't error given an int")
+batch(vector.newRow, ints, true, "vector.newRow doesn't error given an int")

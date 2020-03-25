@@ -15,6 +15,8 @@
 #include "rotation.h"
 #include "typedefs.h"
 #include "utils.h"
+#include "vector.h"
+#include "vectormethods.h"
 
 int luaopen_lmatrix(lua_State *L);
 
