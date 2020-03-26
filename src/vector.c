@@ -1,8 +1,5 @@
 #include "vector.h"
 
-Matrix *make_row_vector(lua_State *L, int cols) {return make_matrix(L, 1, cols);}
-Matrix *make_col_vector(lua_State *L, int rows) {return make_matrix(L, rows, 1);}
-
 int lua_make_row_vector(lua_State *L) {
 	if(lua_isinteger(L, 1)) {
 		int cols = luaL_checkinteger(L, 1);

@@ -92,14 +92,14 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 	 */
 
 	double *M_inv, *Mk, *v, *temp_M, *temp_vector;
-	size_t bytes 	= sizeof(double);
-	v 		= calloc(v0->rows * (n+1), bytes);
-	M_inv 		= calloc(size, bytes);
-	Mk 		= calloc(size, bytes);
-	temp_M		= calloc(size, bytes);
-	temp_vector 	= calloc(n, bytes);
-	if     (M_inv==NULL || v==NULL || Mk==NULL || temp_M==NULL || temp_vector==NULL ) {
-	       	free(M_inv);   free(v);   free(Mk);   free(temp_M);   free(temp_vector);
+	size_t bytes = sizeof(double);
+	v = calloc(v0->rows * (n+1), bytes);
+	M_inv = calloc(size, bytes);
+	Mk = calloc(size, bytes);
+	temp_M = calloc(size, bytes);
+	temp_vector = calloc(n, bytes);
+	if(M_inv==NULL || v==NULL || Mk==NULL || temp_M==NULL || temp_vector==NULL ) {
+		free(M_inv);free(v);free(Mk);free(temp_M);free(temp_vector);
 		ALLOC_FAIL(L);
 	}
 
@@ -131,9 +131,11 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 			v[ get_index(n+1, r, c) ] = 0;
 
 			// M = M * Mk
-			multiply(M,  n+1, n+1,
-				 Mk, n+1,
-				 temp_M);
+			multiply(
+				M, n+1, n+1,
+				Mk, n+1,
+				temp_M
+			);
 			copy(0, size, temp_M, M);
 			
 			// Inverse
@@ -141,22 +143,27 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 			Mk[ get_index(n+1, r, c) ] *= -1.0;
 			Mk[ get_index(n+1, c, r) ] *= -1.0;
 			
-			multiply(Mk,	n+1, n+1,
-				 M_inv, n+1,
-				 temp_M);
+			multiply(
+				Mk, n+1, n+1,
+				M_inv, n+1,
+				temp_M
+			);
 			copy(0, size, temp_M, M_inv);
 		}
 	}
 
 	// M = M * R_n-1,n * M_inv
 	main_rotation_array(n+1, n-1, n, angle, Mk);
-	multiply(M,  n+1, n+1,
-		 Mk, n+1,
-		 temp_M);
-	multiply(temp_M, n+1, n+1,
-		 M_inv,  n+1,
-		 M);
-
+	multiply(
+		M, n+1, n+1,
+		Mk, n+1,
+		temp_M
+	);
+	multiply(
+		temp_M, n+1, n+1,
+		M_inv, n+1,
+		M
+	);
 	free(temp_vector);free(v);free(M_inv);free(Mk);free(temp_M);
 }
 

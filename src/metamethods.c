@@ -99,9 +99,11 @@ int matrix_mul(lua_State *L) {
 		luaL_argcheck(L, m1->cols == m2->rows, 2, "Wrong size");
 
 		Matrix *m3 = make_matrix(L, m1->rows, m2->cols);
-		multiply(m1->val, m1->rows, m1->cols,
-			 m2->val, m2->cols,
-			 m3->val);
+		multiply(
+			m1->val, m1->rows, m1->cols,
+			m2->val, m2->cols,
+			m3->val
+		);
 	}
 
 	return 1;
@@ -128,9 +130,11 @@ int matrix_pow(lua_State *L) {
 		newMatrix->val[i] = m->val[i];
 
 	for(int i = 1; i < num; i++) {
-		multiply(newMatrix->val, m->rows, m->cols,
-			 m->val, m->cols,
-			 temp);
+		multiply(
+			newMatrix->val, m->rows, m->cols,
+			m->val, m->cols,
+			temp
+		);
 		copy(0, size, temp, newMatrix->val);
 	}
 

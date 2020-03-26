@@ -38,10 +38,11 @@ double dot(double *arr1, double *arr2, size_t size) {
 
 // takes two arrays and multiplies them as though they were matrices
 // doesn't check size or allocate memory, only puts values where they should go in the result
-void multiply(double *arr1, int rows1, int cols1, 
-	      double *arr2, int cols2, 
-	      double *result) 
-{
+void multiply(
+	double *arr1, int rows1, int cols1, 
+	double *arr2, int cols2, 
+	double *result
+) {
 	// for each entry of the result matrix: dot the row of arr1 with the column of arr2
 	for(int i = 0; i < rows1 * cols2; i++) {
 		result[i] = 0;

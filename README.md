@@ -14,7 +14,7 @@ Given that you have the lua headers on your system: `lua.h`, `lualib.h`, and `la
 $ make
 ```
 
-The lua\_matrix.so file should be placed in the bin directory
+The lmatrix.so file should be placed in the bin directory
 
 #### Manually
 The Makefile basically keeps track of the command so I don't have to remember how to compile a shared library every time but the command is here if you don't want to install tup.

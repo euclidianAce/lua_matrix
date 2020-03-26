@@ -9,7 +9,7 @@
 
 
 void console_log(const char* str) {
-	printf("[C] %s\n", str);
+	printf("[C]: %s\n", str);
 }
 
 int main(int argc, char **argv) {

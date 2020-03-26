@@ -1,12 +1,5 @@
 #include "vectormethods.h"
 
-#define max(x, y) ((x < y) ? y : x)
-#define vec_len(v_ptr) max(v_ptr->rows, v_ptr->cols)
-
-// assuming v_ptr is definitely a vector
-#define row_vec(v_ptr) (v_ptr->rows > v_ptr->cols)
-#define col_vec(v_ptr) (v_ptr->cols > v_ptr->rows)
-
 static Matrix *is_vector(lua_State *L, int index) {
 	Matrix *m = is_matrix(L, index);
 	luaL_argcheck(L, m->rows != 1 && m->cols != 1, index, "Vector expected");
