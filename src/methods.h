@@ -8,7 +8,6 @@
 #include "typedefs.h"
 #include "utils.h"
 
-
 int lua_set_matrix_element(lua_State *L);
 int lua_get_matrix_element(lua_State *L);
 int lua_get_matrix_size(lua_State *L);

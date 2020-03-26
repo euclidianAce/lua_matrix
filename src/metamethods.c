@@ -159,3 +159,66 @@ int matrix_gc(lua_State *L) {
 	free(m->val);
 	return 0;
 }
+
+static int __newindex(lua_State *L) { // __newindex(self, key, value)
+	Matrix *m = luaL_checkudata(L, lua_upvalueindex(1), METATABLE);
+	int row = lua_tointeger(L, lua_upvalueindex(2));
+	// TODO: validate arguments
+	int col = lua_tointeger(L, 2);
+	double value = lua_tonumber(L, 3);
+
+	m->val[get_index(m->cols, row, col)] = value;
+	return 0;
+}
+
+static int __index(lua_State *L) { // __index(self, key)
+	Matrix *m = luaL_checkudata(L, lua_upvalueindex(1), METATABLE);
+	int row = lua_tointeger(L, lua_upvalueindex(2));
+	// TODO: validate arguments
+	int col = lua_tointeger(L, 2);
+	
+	lua_pushnumber(L, m->val[get_index(m->cols, row, col)]);
+	return 1;
+}
+
+static void create_metatable(lua_State *L, int row, int matrix_idx) {
+	lua_newtable(L);
+	int mt_idx = lua_gettop(L);
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, matrix_idx);
+	lua_pushinteger(L, row);
+	lua_pushcclosure(L, __index, 2);
+	lua_settable(L, mt_idx);
+
+	lua_pushliteral(L, "__newindex");
+	lua_pushvalue(L, matrix_idx);
+	lua_pushinteger(L, row);
+	lua_pushcclosure(L, __newindex, 2);
+	lua_settable(L, mt_idx);
+}
+
+int matrix_index(lua_State *L) {
+	if(lua_isinteger(L, 2)) {
+		// return the row as a table with some __newindex and __index metamethods
+		lua_newtable(L);
+		create_metatable(L, lua_tointeger(L, 2), 1);
+		lua_setmetatable(L, 3);
+		return 1;
+	}
+	if(lua_isstring(L, 2)) {
+		// grab the method from the "methods" table in the metatable
+		lua_getmetatable(L, 1); // 3
+		lua_pushstring(L, "methods"); // 4
+		lua_gettable(L, 3); // 4
+		lua_rotate(L, -2, 1);
+		lua_pop(L, 1); // 3
+		lua_rotate(L, -2, 1);
+		lua_gettable(L, 2);
+
+		return 1;
+	}
+
+	lua_pushnil(L);
+	return 1;
+}
+

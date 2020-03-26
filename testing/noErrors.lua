@@ -50,19 +50,19 @@ math.randomseed(os.time())
 
 
 local ints = {}
-for i = 1, 20 do
+for i = 1, 30 do
 	table.insert(ints, {i})
 end
 local intPairs = {}
-for i = 1, 20 do
-	for j = 1, 20 do
+for i = 1, 30 do
+	for j = 1, 30 do
 		table.insert(intPairs, {i, j})
 	end
 end
 local intTriplets = {}
-for i = 1, 20 do
-	for j = 1, 20 do
-		for k = 1, 20 do
+for i = 1, 30 do
+	for j = 1, 30 do
+		for k = 1, 30 do
 			table.insert(intTriplets, {i, j, k})
 		end
 	end
@@ -77,14 +77,14 @@ local function range(n)
 	end
 	return t
 end
-for i = 1, 20 do
-	local t = range(i*20)
+for i = 1, 30 do
+	local t = range(i*30)
 	table.insert(intTablePairs, {i, t})
 	table.insert(tableIntPairs, {t, i})
 end
 
 local tablesOfTables = {}
-for i = 1, 20 do
+for i = 1, 30 do
 	local t = {}
 	for j = 1, i do
 		table.insert(t, range(i))
@@ -117,6 +117,8 @@ batch(function(size)
 		end
 	end
 end, ints, true, "matrix.identity should produce a matrix with 1s along the diagonal and 0s elsewhere")
+
+printTitle("INDEXING")
 
 
 printTitle("ARITHMETIC")

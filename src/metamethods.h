@@ -21,5 +21,6 @@ int matrix_mod(lua_State *L);
 int matrix_mul(lua_State *L);
 int matrix_pow(lua_State *L);
 int matrix_gc(lua_State *L);
+int matrix_index(lua_State *L);
 
 #endif
