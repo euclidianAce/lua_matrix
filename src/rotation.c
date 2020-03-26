@@ -94,10 +94,10 @@ static void rotation_array(lua_State *L, Matrix *v0 /* simplex */, double angle,
 	double *M_inv, *Mk, *v, *temp_M, *temp_vector;
 	size_t bytes 	= sizeof(double);
 	v 		= calloc(v0->rows * (n+1), bytes);
-	M_inv 		= calloc(size+10, bytes);
-	Mk 		= calloc(size+10, bytes);
-	temp_M		= calloc(size+10, bytes);
-	temp_vector 	= calloc(n+10, bytes);
+	M_inv 		= calloc(size, bytes);
+	Mk 		= calloc(size, bytes);
+	temp_M		= calloc(size, bytes);
+	temp_vector 	= calloc(n, bytes);
 	if     (M_inv==NULL || v==NULL || Mk==NULL || temp_M==NULL || temp_vector==NULL ) {
 	       	free(M_inv);   free(v);   free(Mk);   free(temp_M);   free(temp_vector);
 		ALLOC_FAIL(L);

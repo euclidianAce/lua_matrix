@@ -16,9 +16,9 @@
 
 #define SIZE_ERR "Matrices not same size"
 // Indexing functions
-int get_row_from_index(int index, int col);
-int get_col_from_index(int index, int col);
-int get_index(int cols, int row, int col);
+#define get_row_from_index(index, col) (index / col + 1)
+#define get_col_from_index(index, col) (index % col + 1)
+#define get_index(cols, row, col) (cols * (row - 1) + col - 1)
 
 int same_size(Matrix *m1, Matrix *m2);
 // Checks if a given index on the Lua stack is a matrix (via metatables) and returns it, errors otherwise
