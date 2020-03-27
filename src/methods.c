@@ -1,24 +1,11 @@
 #include "methods.h"
 
-int lua_set_matrix_element(lua_State *L) {
-	double val = luaL_checknumber(L, 4);
-	*get_element_addr(L) = val;
-	return 0;
-}
-
-int lua_get_matrix_element(lua_State *L) {
-	lua_pushnumber(L, *get_element_addr(L));
-	return 1;
-}
-
 int lua_get_matrix_size(lua_State *L) {
 	Matrix *m = is_matrix(L, 1);
 	lua_pushinteger(L, m->rows);
 	lua_pushinteger(L, m->cols);
 	return 2;
 }
-
-
 
 /* Schur Product
  * 	Component-wise multiplication

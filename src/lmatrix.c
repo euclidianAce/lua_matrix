@@ -26,13 +26,12 @@ static const struct luaL_Reg matrix_metamethods[] = {
 	{"__mul", matrix_mul},
 	{"__pow", matrix_pow},
 	{"__gc", matrix_gc},
+	{"__tostring", matrix_tostring},
 	{"__index", matrix_index},
 	{NULL, NULL}
 };
 
 static const struct luaL_Reg matrix_methods[] = {
-	{"set",	lua_set_matrix_element},
-	{"get",	lua_get_matrix_element},
 	{"size",lua_get_matrix_size},
 	{"rows",generate_rows},
 	{"cols",generate_cols},

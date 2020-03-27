@@ -142,21 +142,24 @@ int matrix_pow(lua_State *L) {
 	return 1;
 }
 
-//int matrix_tostring(lua_State *L) {
-//	luaL_Buffer b;
-//	luaL_buffinit(L, &b);
-//
-//	// printf("%*s", n, ptr); variable num spaces
-//	for(int r = 0; r < m->rows; r++) {
-//		for(int c = 0; c < m->cols; c++) {
-//			char buffer[100];
-//			int sz = snprintf(buffer, /*size*/, "%*s%.1f", /*more formatting*/);
-//		}
-//	}
-//
-//	luaL_pushresult(&b);
-//	return 1;
-//}
+int matrix_tostring(lua_State *L) {
+	luaL_Buffer b;
+	luaL_buffinit(L, &b);
+	Matrix *m = luaL_checkudata(L, 1, METATABLE);
+
+	for(int r = 0; r < m->rows; r++) {
+		for(int c = 0; c < m->cols; c++) {
+			char buffer[12];
+			snprintf(buffer, 12, "%.3e", m->val[get_index(m->cols, r+1, c+1)]);
+			luaL_addstring(&b, buffer);
+			luaL_addstring(&b, "\t");
+		}
+		if(r < m->rows - 1) luaL_addstring(&b, "\n");
+	}
+
+	luaL_pushresult(&b);
+	return 1;
+}
 
 int matrix_gc(lua_State *L) {
 	Matrix *m = luaL_checkudata(L, 1, METATABLE);
@@ -165,9 +168,11 @@ int matrix_gc(lua_State *L) {
 }
 
 static int __newindex(lua_State *L) { // __newindex(self, key, value)
+	luaL_argcheck(L, lua_isinteger(L, 2), 2, "Integer expected");
+	luaL_argcheck(L, lua_isnumber(L, 3), 3, "Number expected");
+
 	Matrix *m = luaL_checkudata(L, lua_upvalueindex(1), METATABLE);
 	int row = lua_tointeger(L, lua_upvalueindex(2));
-	// TODO: validate arguments
 	int col = lua_tointeger(L, 2);
 	double value = lua_tonumber(L, 3);
 
@@ -176,9 +181,10 @@ static int __newindex(lua_State *L) { // __newindex(self, key, value)
 }
 
 static int __index(lua_State *L) { // __index(self, key)
+	luaL_argcheck(L, lua_isinteger(L, 2), 2, "Integer expected");
+
 	Matrix *m = luaL_checkudata(L, lua_upvalueindex(1), METATABLE);
 	int row = lua_tointeger(L, lua_upvalueindex(2));
-	// TODO: validate arguments
 	int col = lua_tointeger(L, 2);
 	
 	lua_pushnumber(L, m->val[get_index(m->cols, row, col)]);
@@ -207,9 +213,9 @@ int matrix_index(lua_State *L) {
 		lua_newtable(L);
 		create_metatable(L, lua_tointeger(L, 2), 1);
 		lua_setmetatable(L, 3);
+
 		return 1;
-	}
-	if(lua_isstring(L, 2)) {
+	} else if(lua_isstring(L, 2)) {
 		// grab the method from the "methods" table in the metatable
 		lua_getmetatable(L, 1); // 3
 		lua_pushstring(L, "methods"); // 4

@@ -27,7 +27,6 @@
 
 int same_size(Matrix *m1, Matrix *m2);
 Matrix *is_matrix(lua_State *L, int index);
-double *get_element_addr(lua_State *L);
 double dot(double *arr1, double *arr2, size_t size);
 
 // Multiplies arr1 and arr2 into result as if they were matrices of the given sizes.

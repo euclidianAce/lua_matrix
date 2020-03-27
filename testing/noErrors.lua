@@ -17,10 +17,10 @@ local function batch(func, argBatch, res, str)
 
 	if #errors > 0 then -- test failed
 		io.write(
-			("\r[%s] %s \n  (%d/%d) %s%s\n"):format(
+			("\r[%s] %s \n  %d of %d Tests failed with the following errors\n    %s\n"):format(
 				string.char(27).."[31;1mFailed"..string.char(27).."[0m",
 				str,
-				#errors, #argBatch, " Tests failed with the following errors\n    ", table.concat(errors, "\n    ")
+				#errors, #argBatch, table.concat(errors, "\n    ")
 			)
 		)
 	else
@@ -104,7 +104,7 @@ batch(function(size)
 	local m = matrix.identity(size)
 	for i = 1, size do
 		for j = 1, size do
-			local val = m:get(i,j)
+			local val = m[i][j]
 			if i == j then
 				if val ~= 1 then
 					error(("Entry %d, %d ~= 1, instead = %f"):format(i, j, val))
@@ -120,6 +120,48 @@ end, ints, true, "matrix.identity should produce a matrix with 1s along the diag
 
 printTitle("INDEXING")
 
+batch(function(rows, cols)
+	local t = {}
+	for i = 1, rows do
+		t[i] = {}
+		for j = 1, cols do
+			t[i][j] = math.random(1, 100)
+		end
+	end
+	local m = matrix.new(t)
+	for r = 1, rows do
+		for c = 1, cols do
+			if m[r][c] ~= t[r][c] then
+				error(("Entry %d, %d does not match"):format(r, c))
+			end
+		end
+	end
+end, intPairs, true, "Matrix indexing (__index) should produce the correct values")
+
+batch(function(rows, cols)
+	local m = matrix.random(rows, cols)
+	for r = 1, rows do
+		for c = 1, cols do
+			local randomVal = math.random(1, 100)
+			m[r][c] = randomVal
+			if m[r][c] ~= randomVal then
+				error(("Entry %d, %d was not properly assigned"):format(r, c))
+			end
+		end
+	end
+end, intPairs, true, "Matrix index assigning (__newindex) should correctly assign a new value")
+
+--[[
+batch(function(rows, cols)
+	local m = matrix.random(rows, cols)
+
+end, intPairs, false, "__index should error when a non int value is indexed")
+
+batch(function(rows, cols)
+	local m = matrix.random(rows, cols)
+
+end, intPairs, false, "__newindex should error when a non int value is indexed")
+]]
 
 printTitle("ARITHMETIC")
 
@@ -155,8 +197,9 @@ batch(function(i)
 	local a = matrix.random(i, i+1) ^ i
 end, ints, false, "Non-square matrix int exponent should error")
 
-printTitle("METAMETHODS")
+printTitle("METHODS")
 
+--[[
 batch(function(i, j)
 	local a = matrix.random(i,j)
 	for i = 1, i do
@@ -184,7 +227,7 @@ batch(function(i, j)
 	local a = matrix.random(i, j)
 	local b = a:get(i+1, j+1)
 end, intPairs, false, "Matrix:get should error when out of bounds")
-
+]]
 
 batch(function(i, j)
 	local a = matrix.random(i, j):schur( matrix.random(i, j) )

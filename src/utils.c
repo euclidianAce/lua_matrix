@@ -14,21 +14,6 @@ Matrix *is_matrix(lua_State *L, int index) {
 	return (Matrix *)ud;
 }
 
-// util function for set and get
-double *get_element_addr(lua_State *L) {
-	Matrix *m = is_matrix(L, 1);
-	int row = luaL_checkinteger(L, 2);
-	int col = luaL_checkinteger(L, 3);
-
-	// validate arguments
-	luaL_argcheck(L, m != NULL, 1 ,"`matrix' expected");
-	luaL_argcheck(L, 1 <= row && row <= m->rows, 2, "row out of range");
-	luaL_argcheck(L, 1 <= col && col <= m->cols, 3, "column out of range");
-	
-	// return the address
-	return &m->val[ get_index(m->cols, row, col) ];
-}
-
 double dot(double *arr1, double *arr2, size_t size) {
 	double result = 0;
 	for(int i = 0; i < size; i++)
