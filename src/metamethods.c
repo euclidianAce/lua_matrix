@@ -191,20 +191,17 @@ static int __index(lua_State *L) { // __index(self, key)
 	return 1;
 }
 
+static const luaL_Reg indexing_funcs[] = {
+	{"__index", __index},
+	{"__newindex", __newindex},
+	{NULL, NULL}
+};
+
 static void create_metatable(lua_State *L, int row, int matrix_idx) {
 	lua_newtable(L);
-	int mt_idx = lua_gettop(L);
-	lua_pushstring(L, "__index");
 	lua_pushvalue(L, matrix_idx);
 	lua_pushinteger(L, row);
-	lua_pushcclosure(L, __index, 2);
-	lua_settable(L, mt_idx);
-
-	lua_pushliteral(L, "__newindex");
-	lua_pushvalue(L, matrix_idx);
-	lua_pushinteger(L, row);
-	lua_pushcclosure(L, __newindex, 2);
-	lua_settable(L, mt_idx);
+	luaL_setfuncs(L, indexing_funcs, 2);
 }
 
 int matrix_index(lua_State *L) {

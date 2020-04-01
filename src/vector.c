@@ -42,4 +42,17 @@ int lua_make_col_vector(lua_State *L) {
 	return luaL_argerror(L, 1, "Expected table or integer");
 }
 
+int lua_make_random_col_vector(lua_State *L) {
+	int rows = luaL_checkinteger(L, 1);
+	Matrix *vec = make_col_vector(L, rows);
+	make_random_array(vec->val, rows);
+	return 1;
+}
+
+int lua_make_random_row_vector(lua_State *L) {
+	int cols = luaL_checkinteger(L, 1);
+	Matrix *vec = make_row_vector(L, cols);
+	make_random_array(vec->val, cols);
+	return 1;
+}
 

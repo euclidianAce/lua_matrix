@@ -14,7 +14,6 @@ for i = 2, 8 do
 	for j = 1, i do
 		local start = (j-1)*i + 1
 		local finish = start + i - 1
-		--print("Row " .. j .. " range:", start, finish)
 		table.insert(tab, range(start, finish))
 	end
 	print(matrix.new(tab))

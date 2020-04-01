@@ -286,3 +286,41 @@ local vector = matrix.vector
 batch(function() assert(vector ~= nil) end, {{}}, true, "matrix.vector is not nil")
 batch(vector.newCol, ints, true, "vector.newCol doesn't error given an int")
 batch(vector.newRow, ints, true, "vector.newRow doesn't error given an int")
+batch(vector.randomCol, ints, true, "vector.randomCol doesn't error given an int")
+batch(vector.randomRow, ints, true, "vector.randomRow doesn't error given an int")
+local rowVecPairs = {}
+for i = 2, 30 do
+	table.insert(rowVecPairs, {vector.randomRow(i), vector.randomRow(i)})
+end
+local colVecPairs = {}
+for i = 2, 30 do
+	table.insert(colVecPairs, {vector.randomCol(i), vector.randomCol(i)})
+end
+local rowColVecPairs = {}
+local colRowVecPairs = {}
+for i = 2, 30 do
+	table.insert(rowColVecPairs, {vector.randomRow(i), vector.randomCol(i)})
+	table.insert(colRowVecPairs, {vector.randomCol(i), vector.randomRow(i)})
+end
+batch(function(vec1, vec2)
+	return type(vec1:dot(vec2)) == "number"
+end, rowVecPairs, true, "vector:dot returns a number given two row vectors of the same size") 
+batch(function(vec1, vec2)
+	return type(vec1:dot(vec2)) == "number"
+end, colVecPairs, true, "vector:dot returns a number given two column vectors of the same size") 
+batch(function(vec1, vec2)
+	return type(vec1:dot(vec2)) == "number"
+end, rowColVecPairs, true, "vector:dot returns a number given a row and column vector of the same size")
+batch(function(vec1, vec2)
+	return type(vec1:dot(vec2)) == "number"
+end, colRowVecPairs, true, "vector:dot returns a number given a column and row vector of the same size")
+--[[
+batch(function(vec1, vec2)
+	local v = vec1:cross(vec2)
+end, {}, true, "")
+]]
+--[[
+batch(function()
+	
+end, {}, true, "")
+]]

@@ -2,7 +2,7 @@
 
 static Matrix *is_vector(lua_State *L, int index) {
 	Matrix *m = is_matrix(L, index);
-	luaL_argcheck(L, m->rows != 1 && m->cols != 1, index, "Vector expected");
+	luaL_argcheck(L, m->rows == 1 || m->cols == 1, index, "Vector expected");
 	return m;
 }
 

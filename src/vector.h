@@ -7,5 +7,7 @@
 
 int lua_make_row_vector(lua_State *L);
 int lua_make_col_vector(lua_State *L);
+int lua_make_random_col_vector(lua_State *L);
+int lua_make_random_row_vector(lua_State *L);
 
 #endif

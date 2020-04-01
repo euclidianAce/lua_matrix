@@ -13,6 +13,8 @@ static const struct luaL_Reg matrix_funcs[] = {
 static const struct luaL_Reg vector_funcs[] = {
 	{"newRow", lua_make_row_vector},
 	{"newCol", lua_make_col_vector},
+	{"randomRow", lua_make_random_row_vector},
+	{"randomCol", lua_make_random_col_vector},
 	{NULL, NULL}
 };
 
@@ -48,7 +50,7 @@ static const struct luaL_Reg matrix_methods[] = {
 	{NULL, NULL}
 };
 
-int luaopen_lmatrix(lua_State *L) {
+LUA_API int luaopen_lmatrix(lua_State *L) {
 	luaL_newmetatable(L, METATABLE);
 	luaL_setfuncs(L, matrix_metamethods, 0);
 

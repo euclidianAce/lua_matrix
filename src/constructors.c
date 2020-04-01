@@ -112,12 +112,16 @@ int lua_make_identity_matrix(lua_State *L) {
 	return 1;
 }
 
+void make_random_array(double *arr, size_t size) {
+	for(int i = 0; i < size; i++)
+		arr[i] = (double) rand()/RAND_MAX - 0.5;
+}
+
 int make_random_matrix(lua_State *L) {
 	int rows = luaL_checkinteger(L, 1);
 	int cols = luaL_checkinteger(L, 2);
 	Matrix *m = make_matrix(L, rows, cols);
-	for(int i = 0; i < rows*cols; i++)
-		m->val[i] = (double) rand()/RAND_MAX - 0.5;
+	make_random_array(m->val, rows*cols);
 	return 1;
 }
 

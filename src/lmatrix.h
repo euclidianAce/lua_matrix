@@ -18,6 +18,6 @@
 #include "vector.h"
 #include "vectormethods.h"
 
-int luaopen_lmatrix(lua_State *L);
+LUA_API int luaopen_lmatrix(lua_State *L);
 
 #endif

@@ -26,7 +26,6 @@ $(TESTTARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $(TESTTARGET) $(OBJ) $(LIBS)
 
 clean: 
-	rm -f $(OBJ) $(TARGET) \
-	rm -f $(TESTTARGET)
+	rm -f $(OBJ) $(TARGET) $(TESTTARGET)
 
 all: clean default testing
