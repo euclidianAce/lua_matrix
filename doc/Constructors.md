@@ -23,7 +23,7 @@ Produces a matrix of the given size with entries in the range [-0.5, 0.5]
 
 The implementation of rotation matrices is based on the [Aguilera-Perez algorithm.](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.8662)
 In short, the algorithm describes a method of producing a general N-dimensional rotation matrix by composing main rotations and translations to turn the rotation about any axis into a main rotation, then composes all of those transformations.
-Seeing as the algorithm is meant to handle any size of matrix and involves a lot of matrix multiplication, it winds up being (I think) O(n^3). So I would recommend pre-calculating any rotations you might use and store them instead of calculating them on-the-fly.
+Seeing as the algorithm is meant to handle any size of matrix and involves a lot of matrix multiplication, it winds up being (I think) O(n^3) where n is the dimension of the matrix. So I would recommend pre-calculating any rotations you might use and store them instead of calculating them on-the-fly.
 
 ### `matrix.translation(vector:matrix)`
 Produces a homogeneous translation matrix based on the given vector.

@@ -314,11 +314,26 @@ end, rowColVecPairs, true, "vector:dot returns a number given a row and column v
 batch(function(vec1, vec2)
 	return type(vec1:dot(vec2)) == "number"
 end, colRowVecPairs, true, "vector:dot returns a number given a column and row vector of the same size")
---[[
-batch(function(vec1, vec2)
+batch(function()
+	local vec1 = vector.randomRow(3)
+	local vec2 = vector.randomRow(3)
 	local v = vec1:cross(vec2)
-end, {}, true, "")
-]]
+end, ints, true, "vector:cross should not error given two row vectors of size 3")
+batch(function()
+	local vec1 = vector.randomCol(3)
+	local vec2 = vector.randomCol(3)
+	local v = vec1:cross(vec2)
+end, ints, true, "vector:cross should not error given two col vectors of size 3")
+batch(function()
+	local vec1 = vector.randomRow(3)
+	local vec2 = vector.randomCol(3)
+	local v = vec1:cross(vec2)
+end, ints, true, "vector:cross should not error given a row and column vector of size 3")
+batch(function()
+	local vec1 = vector.randomCol(3)
+	local vec2 = vector.randomRow(3)
+	local v = vec1:cross(vec2)
+end, ints, true, "vector:cross should not error given a column and row vector of size 3")
 --[[
 batch(function()
 	

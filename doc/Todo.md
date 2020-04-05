@@ -3,7 +3,7 @@
 - [x] Basic Constructor
 - [x] Basic Getters and Setters
 - [x] Basic error checking for index out of range
-- [ ] Either a \_\_tostring method or a simple print method to help debugging
+- [x] Either a \_\_tostring method or a simple print method to help debugging
 - [x] Add aritmetic metamethods
 	- [x] \_\_add
 	- [x] \_\_sub
@@ -30,13 +30,14 @@
 	- Even though this is almost trivially implementable, idk what to call it because ```m:schur(n)``` seems a little weird
 - [ ] Better Error messages
 - [x] Better monitor memory allocation and throw errors if it fails
+- [x] Implement array-like indexing for matrices with __index and __newindex
 
 #### Mid Term
 - [x] Learn to use header files and if they might be needed for this project.
 - [x] Possibly redefine how the Matrix typedef struct works.
-- [ ] Separate Vector Class? (at the very least some nice vector methods and constructors)
+- [x] Separate Vector Class? (at the very least some nice vector methods and constructors)
 	- [ ] Something Something Polymorphism
-	- [ ] Cross and dot products
+	- [x] Cross and dot products
 
 #### Long Term
 - [ ] Determinant method

@@ -150,9 +150,10 @@ int matrix_tostring(lua_State *L) {
 	for(int r = 0; r < m->rows; r++) {
 		for(int c = 0; c < m->cols; c++) {
 			char buffer[12];
-			snprintf(buffer, 12, "%.3e", m->val[get_index(m->cols, r+1, c+1)]);
+			snprintf(buffer, 12, "% .3e", m->val[get_index(m->cols, r+1, c+1)]);
 			luaL_addstring(&b, buffer);
-			luaL_addstring(&b, "\t");
+			if(c < m->cols - 1)
+				luaL_addstring(&b, "\t");
 		}
 		if(r < m->rows - 1) luaL_addstring(&b, "\n");
 	}

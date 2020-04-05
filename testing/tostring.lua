@@ -20,3 +20,9 @@ for i = 2, 8 do
 	print()
 end
 
+
+for i = 2, 5 do
+	for j = 2, 5 do
+		print(matrix.random(i, j))
+	end
+end
