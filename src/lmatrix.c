@@ -34,9 +34,9 @@ static const struct luaL_Reg matrix_metamethods[] = {
 };
 
 static const struct luaL_Reg matrix_methods[] = {
-	{"size",lua_get_matrix_size},
-	{"rows",generate_rows},
-	{"cols",generate_cols},
+	{"size", lua_get_matrix_size},
+	{"rows", generate_rows},
+	{"cols", generate_cols},
 	{"entries", generate_entries},
 	{"map", matrix_map},
 	{"schur", matrix_schur},

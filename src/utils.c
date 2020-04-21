@@ -1,8 +1,3 @@
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-
-#include "typedefs.h"
 #include "utils.h"
 
 int same_size(Matrix *m1, Matrix *m2) {
@@ -35,12 +30,31 @@ void multiply(
 		int row_index = (i / cols2) * cols1;
 		// column of the second matrix (i.e. the offset to be added to)
 		int col_index = (i % cols2);
-		for(; col_index < cols1*cols2; row_index+=1, col_index+=cols2) {
+		for(; col_index < cols1*cols2; row_index+=1, col_index+=cols2)
 			result[i] += arr1[ row_index ] * arr2[ col_index ];
-		}
 	}
 }
 
+void arr_add(int start, int end, double *arr1, double *arr2, double *result) {
+	for(int i = start; i < end; i++)
+		result[i] = arr1[i] + arr2[i];
+}
+void arr_sub(int start, int end, double *arr1, double *arr2, double *result) {
+	for(int i = start; i < end; i++)
+		result[i] = arr1[i] - arr2[i];
+}
+void arr_unm(int start, int end, double *arr1, double *result) {
+	for(int i = start; i < end; i++)
+		result[i] = -arr1[i];
+}
+void arr_div(int start, int end, double *arr, double divisor, double *result) {
+	for(int i = start; i < end; i++)
+		result[i] = arr[i] / divisor;
+}
+void arr_idiv(int start, int end, double *arr, double divisor, double *result) {
+	for(int i = start; i < end; i++)
+		result[i] = (int)arr[i] / divisor;
+}
 void copy(int start, int end, double *arr1, double *arr2) {
 	for(int i = start; i < end; i++)
 		arr2[i] = arr1[i];

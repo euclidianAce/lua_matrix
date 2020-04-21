@@ -6,10 +6,12 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "typedefs.h"
-
 #include <stdio.h>
+#include <lua.h>
+#include <lualib.h>
 #include <lauxlib.h>
+
+#include "typedefs.h"
 
 #define SIZE_ERR "Matrices not same size"
 #define ALLOC_FAIL(L) luaL_error(L, "Unable to allocate memory.")
@@ -36,7 +38,11 @@ void multiply(
 	double *arr2, int cols2, 
 	double *result
 );
-
+void arr_add(int start, int end, double *arr1, double *arr2, double *result);
+void arr_sub(int start, int end, double *arr1, double *arr2, double *result);
+void arr_unm(int start, int end, double *arr1, double *result);
+void arr_div(int start, int end, double *arr, double divisor, double *result);
+void arr_idiv(int start, int end, double *arr, double divisor, double *result);
 void copy(int start, int end, double *arr1, double *arr2);
 
 #endif

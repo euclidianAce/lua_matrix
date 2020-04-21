@@ -3,28 +3,18 @@
 int matrix_add(lua_State *L) {
 	Matrix *m1 = is_matrix(L, 1);
 	Matrix *m2 = is_matrix(L, 2);
-	
 	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
-	
 	Matrix *sum = make_matrix(L, m1->rows, m1->cols);
-
-	for(int i = 0; i < m1->rows * m1->cols; i++)
-		sum->val[i] = m1->val[i] + m2->val[i];
-
+	arr_add(0, m1->rows * m1->cols, m1->val, m2->val, sum->val);
 	return 1;
 }
 
 int matrix_sub(lua_State *L) {
 	Matrix *m1 = is_matrix(L, 1);
 	Matrix *m2 = is_matrix(L, 2);
-	
 	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
-
 	Matrix *dif = make_matrix(L, m1->rows, m1->cols);
-
-	for(int i = 0; i < m1->rows * m1->cols; i++)
-		dif->val[i] = m1->val[i] - m2->val[i];
-
+	arr_sub(0, m1->rows * m1->cols, m1->val, m2->val, dif->val);
 	return 1;
 }
 
@@ -35,7 +25,6 @@ int matrix_unm(lua_State *L) {
 		negm->val[i] = -m->val[i];
 
 	return 1;
-
 }
 
 int matrix_div(lua_State *L) {

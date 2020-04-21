@@ -27,10 +27,9 @@
 	- [x] entries - each call returns a single element
 - [x] Map function to apply function to each element of a matrix
 - [x] Schur product metamethod (component-wise multiplication, useful for neural networks and such)
-	- Even though this is almost trivially implementable, idk what to call it because ```m:schur(n)``` seems a little weird
 - [ ] Better Error messages
 - [x] Better monitor memory allocation and throw errors if it fails
-- [x] Implement array-like indexing for matrices with __index and __newindex
+- [x] Implement array-like indexing for matrices with \_\_index and \_\_newindex
 
 #### Mid Term
 - [x] Learn to use header files and if they might be needed for this project.
@@ -38,10 +37,10 @@
 - [x] Separate Vector Class? (at the very least some nice vector methods and constructors)
 	- [ ] Something Something Polymorphism
 	- [x] Cross and dot products
+- [ ] Make arithmetic methods to mutate matrices (for operations like m:add(m) instead of m = m + n, to save memory)
 
 #### Long Term
 - [ ] Determinant method
 - [ ] Row reduction and Gaussian Elimination methods
 - [x] Implement the Aguilera-Perez Algorithm for Rotation Matrix Constructor
-
 

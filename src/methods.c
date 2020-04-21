@@ -43,3 +43,39 @@ int matrix_map(lua_State * L) {
 
 	return 1;
 }
+
+// Mutating arithmetic methods
+
+int matrix_mut_add(lua_State *L) {
+	Matrix *m1 = is_matrix(L, 1);
+	Matrix *m2 = is_matrix(L, 2);
+	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
+	arr_add(0, m1->rows * m1->cols, m1->val, m2->val, m1->val);
+	return 0;
+}
+int matrix_mut_sub(lua_State *L) {
+	Matrix *m1 = is_matrix(L, 1);
+	Matrix *m2 = is_matrix(L, 2);
+	luaL_argcheck(L, same_size(m1, m2), 2, SIZE_ERR);
+	arr_sub(0, m1->rows * m1->cols, m1->val, m2->val, m1->val);
+	return 0;
+}
+int matrix_mut_unm(lua_State *L) {
+	Matrix *m1 = is_matrix(L, 1);
+	arr_unm(0, m1->rows * m1->cols, m1->val, m1->val);
+	return 0;
+}
+int matrix_mut_div(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	double d = luaL_checknumber(L, 2);
+	arr_div(0, m->rows * m->cols, m->val, d, m->val);
+	return 0;
+}
+int matrix_mut_idiv(lua_State *L) {
+	Matrix *m = is_matrix(L, 1);
+	double d = luaL_checknumber(L, 2);
+	arr_idiv(0, m->rows * m->cols, m->val, d, m->val);
+	return 0;
+}
+
+
