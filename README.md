@@ -5,7 +5,6 @@ A matrix library for Lua, written in C. (This is basically a port of a library I
 # Build (GNU make)
 
 ### As a dynamic library
-I do keep a binary in the bin directory as lua\_matrix.so for easy access but if you'd like to build it yourself here's how.
 Given that you have the lua headers on your system: `lua.h`, `lualib.h`, and `lauxlib.h`
 
 1. clone the repo && cd into it
@@ -14,15 +13,20 @@ Given that you have the lua headers on your system: `lua.h`, `lualib.h`, and `la
 $ make
 ```
 
-The lmatrix.so file should be placed in the bin directory
+Additionally, I keep a simple test suite. You can run
+```
+$ make testing
+$ cd testing/
+$ ./runTests noErrors.lua
+```
+to build and run the test suite.
 
 #### Manually
-The Makefile basically keeps track of the command so I don't have to remember how to compile a shared library every time but the command is here if you don't want to install tup.
 
 1. Clone the repo or curl/wget/whatever the src files
 2. run the following
 ```
-$ gcc -shared -o lmatrix.so -fPIC *.c
+$ gcc -shared -o lmatrix.so -fPIC src/*.c
 ```
 
 # Use
@@ -30,8 +34,15 @@ Once you've either downloaded or compiled the library, either placing it in the 
 
 ```lua
 local matrix = require "lmatrix"
-local a = matrix.new(3, 3)
+local a = matrix.new{
+	{1,2,3},
+	{4,5,6},
+	{7,8,9}
+}
+local b = matrix.random(3, 3)
+print(a*b)
 ```
 
 For details of how to actually use the library, check out either the wiki or doc directory
+Currently the docs are a little outdated, hopefully I'll get to it soon.
 
